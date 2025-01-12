@@ -14,8 +14,9 @@ import java.time.LocalDate
 import javax.inject.Inject
 
 @HiltViewModel
-class CounterViewModel @Inject constructor(private val repository: CounterRepository) :
-    ViewModel() {
+class CounterViewModel @Inject constructor(
+    private val repository: CounterRepository
+) : ViewModel() {
 
     private val _counter = MutableStateFlow(0)
     val counter: StateFlow<Int> = _counter.asStateFlow()
@@ -36,7 +37,6 @@ class CounterViewModel @Inject constructor(private val repository: CounterReposi
     private fun loadPreferences() {
         viewModelScope.launch {
             _counter.value = repository.getCounter()
-            _isDarkTheme.value = repository.isDarkTheme()
             _dailyStats.value = repository.getDailyStats()
         }
     }
@@ -50,21 +50,14 @@ class CounterViewModel @Inject constructor(private val repository: CounterReposi
             repository.incrementCounter(_counter.value)
             _counter.value = newCount
 
+            // Update daily stats
             val updatedStats = _dailyStats.value.toMutableMap()
             updatedStats[today] = (updatedStats[today] ?: 0) + 1
             repository.updateDailyStats(updatedStats)
             _dailyStats.value = updatedStats
 
+            // Check achievements
             checkAchievements(newCount, updatedStats[today] ?: 0)
-
-        }
-    }
-
-
-    fun resetCounter() {
-        viewModelScope.launch {
-            repository.resetCounter()
-            _counter.value = 0
         }
     }
 
@@ -81,18 +74,15 @@ class CounterViewModel @Inject constructor(private val repository: CounterReposi
         if (totalFolds >= 50 && "First 50 Folds" !in _achievements.value) {
             newAchievements.add("First 50 Folds")
         }
-
-        if (totalFolds >= 100 && "First 100 Folds" !in _achievements.value) {
-            newAchievements.add("First 100 Folds")
+        if (todayFolds >= 100 && "100 Folds in a Day" !in _achievements.value) {
+            newAchievements.add("100 Folds in a Day")
         }
 
         _achievements.value += newAchievements
-
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
     private fun getCurrentDate(): String {
-        return LocalDate.now().toString()
-
+        return LocalDate.now().toString() // "YYYY-MM-DD"
     }
 }

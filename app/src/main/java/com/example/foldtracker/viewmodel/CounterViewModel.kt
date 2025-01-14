@@ -1,16 +1,12 @@
 package com.example.foldtracker.viewmodel
 
-import android.os.Build
-import androidx.annotation.RequiresApi
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.foldtracker.repository.CounterRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import java.time.LocalDate
 import javax.inject.Inject
 
 @HiltViewModel
@@ -18,71 +14,57 @@ class CounterViewModel @Inject constructor(
     private val repository: CounterRepository
 ) : ViewModel() {
 
+    // Counter state
     private val _counter = MutableStateFlow(0)
-    val counter: StateFlow<Int> = _counter.asStateFlow()
+    val counter: StateFlow<Int> = _counter
 
+    // Dark theme toggle
     private val _isDarkTheme = MutableStateFlow(false)
-    val isDarkTheme: StateFlow<Boolean> = _isDarkTheme.asStateFlow()
+    val isDarkTheme: StateFlow<Boolean> = _isDarkTheme
 
-    private val _dailyStats = MutableStateFlow<Map<String, Int>>(emptyMap())
-    val dailyStats: StateFlow<Map<String, Int>> = _dailyStats.asStateFlow()
-
+    // Achievements
     private val _achievements = MutableStateFlow<List<String>>(emptyList())
-    val achievements: StateFlow<List<String>> = _achievements.asStateFlow()
+    val achievements: StateFlow<List<String>> = _achievements
 
     init {
-        loadPreferences()
-    }
-
-    private fun loadPreferences() {
         viewModelScope.launch {
+            // Fetch initial counter and theme state
             _counter.value = repository.getCounter()
-            _dailyStats.value = repository.getDailyStats()
+            _isDarkTheme.value = repository.getThemeState()
+
+            // Update achievements based on initial counter value
+            updateAchievements(_counter.value)
         }
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
+    // Increment counter and check achievements
     fun incrementCounter() {
         viewModelScope.launch {
-            val newCount = _counter.value + 1
-            val today = getCurrentDate()
-
-            repository.incrementCounter(_counter.value)
-            _counter.value = newCount
-
-            // Update daily stats
-            val updatedStats = _dailyStats.value.toMutableMap()
-            updatedStats[today] = (updatedStats[today] ?: 0) + 1
-            repository.updateDailyStats(updatedStats)
-            _dailyStats.value = updatedStats
-
-            // Check achievements
-            checkAchievements(newCount, updatedStats[today] ?: 0)
+            val newCounter = _counter.value + 1
+            _counter.value = newCounter
+            repository.updateCounter(newCounter)
+            updateAchievements(newCounter)
         }
     }
 
+    // Toggle dark/light theme
     fun toggleTheme() {
         viewModelScope.launch {
-            repository.toggleTheme(_isDarkTheme.value)
-            _isDarkTheme.value = !_isDarkTheme.value
+            val newThemeState = !_isDarkTheme.value
+            _isDarkTheme.value = newThemeState
+            repository.updateThemeState(newThemeState)
         }
     }
 
-    private fun checkAchievements(totalFolds: Int, todayFolds: Int) {
+    // Unlock achievements based on fold count
+    private fun updateAchievements(count: Int) {
         val newAchievements = mutableListOf<String>()
 
-        if (totalFolds >= 50 && "First 50 Folds" !in _achievements.value) {
-            newAchievements.add("First 50 Folds")
-        }
-        if (todayFolds >= 100 && "100 Folds in a Day" !in _achievements.value) {
-            newAchievements.add("100 Folds in a Day")
-        }
+        if (count >= 10) newAchievements.add("First 10 Folds")
+        if (count >= 50) newAchievements.add("Fold Enthusiast (50 Folds)")
+        if (count >= 100) newAchievements.add("Centurion (100 Folds)")
+        if (count >= 500) newAchievements.add("Fold Master (500 Folds)")
 
-        _achievements.value += newAchievements
-    }
-
-    @RequiresApi(Build.VERSION_CODES.O)
-    private fun getCurrentDate(): String {
-        return LocalDate.now().toString() // "YYYY-MM-DD"
+        _achievements.value = newAchievements
     }
 }

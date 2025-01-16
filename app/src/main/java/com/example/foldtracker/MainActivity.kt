@@ -1,5 +1,6 @@
 package com.example.foldtracker
 
+import android.app.Activity
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
@@ -7,7 +8,9 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.lifecycleScope
 import androidx.window.layout.FoldingFeature
 import androidx.window.layout.WindowInfoTracker
@@ -17,6 +20,7 @@ import com.example.foldtracker.viewmodel.CounterViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.LocalLifecycleOwner
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -39,16 +43,18 @@ class MainActivity : ComponentActivity() {
     @Composable
     @RequiresApi(Build.VERSION_CODES.O)
     private fun TrackFoldingEvents(viewModel: CounterViewModel) {
-        val windowInfoTracker = WindowInfoTracker.getOrCreate(this)
-        val layoutInfoFlow = windowInfoTracker.windowLayoutInfo(this)
+        val windowInfoTracker = WindowInfoTracker.getOrCreate(LocalContext.current)
+        val activity = LocalContext.current as Activity // Cast LocalContext to Activity
 
-        // Observe folding events in a lifecycle-aware scope
-        LaunchedEffect(Unit) {
-            layoutInfoFlow.collect { layoutInfo: WindowLayoutInfo ->
-                // Log layout info for debugging
+        // Use LaunchedEffect to collect the flow in a coroutine
+        LaunchedEffect(activity) {
+            val layoutInfoFlow = windowInfoTracker.windowLayoutInfo(activity)
+
+            layoutInfoFlow.collect { layoutInfo ->
+                // Log layout info
                 Log.d("FoldTracker", "WindowLayoutInfo: $layoutInfo")
 
-                // Detect if the device is folded
+                // Detect folding
                 val isFolded = layoutInfo.displayFeatures.any { feature ->
                     feature is FoldingFeature && feature.state == FoldingFeature.State.HALF_OPENED
                 }
@@ -62,4 +68,5 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
+
 }

@@ -25,6 +25,6 @@ fun CounterScreen(viewModel: CounterViewModel) {
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text(text = "Fold Count:$counter", style = MaterialTheme.typography.bodyMedium)
+        Text(text = "Fold Count:$counter", style = MaterialTheme.typography.titleLarge)
     }
 }

@@ -28,14 +28,11 @@ class MainActivity : ComponentActivity() {
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         setContent {
             val viewModel: CounterViewModel = hiltViewModel()
 
-            // Pass the ViewModel to the app's navigation
+            // App navigation and folding event tracking
             AppNavigation(viewModel = viewModel)
-
-            // Track folding events
             TrackFoldingEvents(viewModel = viewModel)
         }
     }
@@ -44,29 +41,42 @@ class MainActivity : ComponentActivity() {
     @RequiresApi(Build.VERSION_CODES.O)
     private fun TrackFoldingEvents(viewModel: CounterViewModel) {
         val windowInfoTracker = WindowInfoTracker.getOrCreate(LocalContext.current)
-        val activity = LocalContext.current as Activity // Cast LocalContext to Activity
+        val activity = LocalContext.current as Activity
 
-        // Use LaunchedEffect to collect the flow in a coroutine
         LaunchedEffect(activity) {
             val layoutInfoFlow = windowInfoTracker.windowLayoutInfo(activity)
 
             layoutInfoFlow.collect { layoutInfo ->
-                // Log layout info
-                Log.d("FoldTracker", "WindowLayoutInfo: $layoutInfo")
-
-                // Detect folding
-                val isFolded = layoutInfo.displayFeatures.any { feature ->
-                    feature is FoldingFeature && feature.state == FoldingFeature.State.HALF_OPENED
+                // Log all display features for debugging
+                layoutInfo.displayFeatures.forEach { feature ->
+                    Log.d("FoldTracker", "Feature: $feature")
+                    if (feature is FoldingFeature) {
+                        Log.d(
+                            "FoldTracker",
+                            "State: ${feature.state}, Orientation: ${feature.orientation}, Bounds: ${feature.bounds}"
+                        )
+                    }
                 }
 
-                if (isFolded) {
-                    Log.d("FoldTracker", "Device is folded!")
+                // Handle "opened" detection
+                val isOpened = layoutInfo.displayFeatures.any { feature ->
+                    feature is FoldingFeature && (
+                            feature.state == FoldingFeature.State.HALF_OPENED ||  // Common opened state
+                                    (Build.MANUFACTURER.equals("Google", ignoreCase = true) &&
+                                            feature.state == FoldingFeature.State.FLAT) // Pixel Fold adjustment
+                            )
+                }
+
+                // Log and update counter
+                if (isOpened) {
+                    Log.d("FoldTracker", "Device is opened!")
                     viewModel.incrementCounter()
                 } else {
-                    Log.d("FoldTracker", "Device is NOT folded.")
+                    Log.d("FoldTracker", "Device is NOT opened.")
                 }
             }
         }
     }
+
 
 }

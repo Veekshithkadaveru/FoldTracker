@@ -10,43 +10,38 @@ import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
+import javax.inject.Inject
 
-class CounterRepository(
+class CounterRepository @Inject constructor(
     private val dataStore: DataStore<Preferences>
 ) {
 
     companion object {
         val COUNTER_KEY = intPreferencesKey("counter_key")
         val THEME_KEY = booleanPreferencesKey("theme_key")
-        val STATS_KEY = stringPreferencesKey("stats_key")
     }
 
-    // Retrieve the counter value
-    val counter: Flow<Int> = dataStore.data
-        .catch { exception ->
-            if (exception is IOException) emit(emptyPreferences())
-            else throw exception
-        }
-        .map { preferences ->
+    // Fetch the current counter value
+    suspend fun getCounter(): Int {
+        return dataStore.data.map { preferences ->
             preferences[COUNTER_KEY] ?: 0
-        }
-
-    // Retrieve the theme state
-    val themeState: Flow<Boolean> = dataStore.data
-        .catch { exception ->
-            if (exception is IOException) emit(emptyPreferences())
-            else throw exception
-        }
-        .map { preferences ->
-            preferences[THEME_KEY] ?: false
-        }
+        }.first()
+    }
 
     // Update the counter value
-    suspend fun updateCounter(value: Int) {
+    suspend fun updateCounter(newValue: Int) {
         dataStore.edit { preferences ->
-            preferences[COUNTER_KEY] = value
+            preferences[COUNTER_KEY] = newValue
         }
+    }
+
+    // Fetch the current theme state
+    suspend fun getThemeState(): Boolean {
+        return dataStore.data.map { preferences ->
+            preferences[THEME_KEY] ?: false
+        }.first()
     }
 
     // Update the theme state

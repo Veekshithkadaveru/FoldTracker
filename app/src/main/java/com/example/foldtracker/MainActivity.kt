@@ -58,25 +58,26 @@ class MainActivity : ComponentActivity() {
                     }
                 }
 
-                // Handle "opened" detection
-                val isOpened = layoutInfo.displayFeatures.any { feature ->
+                // Handle "folded" detection
+                val isFolded = layoutInfo.displayFeatures.any { feature ->
                     feature is FoldingFeature && (
-                            feature.state == FoldingFeature.State.HALF_OPENED ||  // Common opened state
+                            feature.state == FoldingFeature.State.HALF_OPENED ||  // Common folded state
                                     (Build.MANUFACTURER.equals("Google", ignoreCase = true) &&
                                             feature.state == FoldingFeature.State.FLAT) // Pixel Fold adjustment
                             )
                 }
 
                 // Log and update counter
-                if (isOpened) {
-                    Log.d("FoldTracker", "Device is opened!")
+                if (isFolded) {
+                    Log.d("FoldTracker", "Device is folded!")
                     viewModel.incrementCounter()
                 } else {
-                    Log.d("FoldTracker", "Device is NOT opened.")
+                    Log.d("FoldTracker", "Device is NOT folded.")
                 }
             }
         }
     }
+
 
 
 }

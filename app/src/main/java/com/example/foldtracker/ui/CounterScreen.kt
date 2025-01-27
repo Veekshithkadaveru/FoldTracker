@@ -69,7 +69,7 @@ fun CounterScreen(viewModel: CounterViewModel) {
                 ) {
                     Text(
                         modifier = Modifier.padding(16.dp),
-                        text = "Device open count: $targetCounter",
+                        text = "$targetCounter times folded",
                         style = MaterialTheme.typography.displaySmall,
                         fontWeight = FontWeight.Bold
                     )

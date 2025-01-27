@@ -34,7 +34,6 @@ class CounterViewModel @Inject constructor(
         viewModelScope.launch {
 
             _counter.value = repository.getCounter()
-            _isDarkTheme.value = repository.getThemeState()
 
             updateAchievementsAndProgress(_counter.value)
         }
@@ -57,13 +56,6 @@ class CounterViewModel @Inject constructor(
         }
     }
 
-    fun toggleTheme() {
-        viewModelScope.launch {
-            val newThemeState = !_isDarkTheme.value
-            _isDarkTheme.value = newThemeState
-            repository.updateThemeState(newThemeState)
-        }
-    }
 
     private fun updateAchievementsAndProgress(count: Int) {
         val newAchievements = mutableListOf<String>()

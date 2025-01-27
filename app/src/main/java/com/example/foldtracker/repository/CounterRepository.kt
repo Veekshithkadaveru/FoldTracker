@@ -37,17 +37,4 @@ class CounterRepository @Inject constructor(
         }
     }
 
-    // Fetch the current theme state
-    suspend fun getThemeState(): Boolean {
-        return dataStore.data.map { preferences ->
-            preferences[THEME_KEY] ?: false
-        }.first()
-    }
-
-    // Update the theme state
-    suspend fun updateThemeState(isDarkTheme: Boolean) {
-        dataStore.edit { preferences ->
-            preferences[THEME_KEY] = isDarkTheme
-        }
-    }
 }

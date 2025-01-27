@@ -108,9 +108,6 @@ fun CounterScreen(viewModel: CounterViewModel) {
                     Text("Reset Counter")
                 }
 
-                Button(onClick = { viewModel.toggleTheme() }) {
-                    Text(if (isDarkTheme) "Light Mode" else "Dark Mode")
-                }
             }
 
 

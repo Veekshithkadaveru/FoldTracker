@@ -32,7 +32,7 @@ import com.example.foldtracker.viewmodel.CounterViewModel
 @Composable
 fun CounterScreen(viewModel: CounterViewModel) {
     val counter by viewModel.counter.collectAsState()
-    val isDarkTheme by viewModel.isDarkTheme.collectAsState()
+    val dailyFolds by viewModel.dailyFolds.collectAsState()
     val achievements by viewModel.achievements.collectAsState()
 
     val nextMilestone = if (counter == 0) 50 else ((counter / 50) + 1) * 50
@@ -51,36 +51,40 @@ fun CounterScreen(viewModel: CounterViewModel) {
             )
             .padding(16.dp)
     ) {
-
         Column(
             modifier = Modifier.fillMaxSize(),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-
             AnimatedContent(targetState = counter) { targetCounter ->
                 Card(
-                    modifier = Modifier
-                        .wrapContentSize()
-                        .padding(16.dp),
+                    modifier = Modifier.wrapContentSize().padding(16.dp),
                     colors = CardDefaults.cardColors(MaterialTheme.colorScheme.surface),
                     shape = RoundedCornerShape(20.dp),
                     elevation = CardDefaults.cardElevation(12.dp)
                 ) {
-                    Text(
+                    Column(
                         modifier = Modifier.padding(16.dp),
-                        text = "$targetCounter times folded",
-                        style = MaterialTheme.typography.displaySmall,
-                        fontWeight = FontWeight.Bold
-                    )
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            text = "$targetCounter times folded",
+                            style = MaterialTheme.typography.displaySmall,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Text(
+                            text = "Today's folds: $dailyFolds", // ✅ Show daily count
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Medium,
+                            modifier = Modifier.padding(top = 8.dp)
+                        )
+                    }
                 }
             }
 
             LinearProgressIndicator(
-                progress = progress.coerceIn(0f, 1f), // Ensure progress is between 0 and 1
-                modifier = Modifier
-                    .fillMaxWidth(0.8f)
-                    .padding(top = 16.dp),
+                progress = progress.coerceIn(0f, 1f),
+                modifier = Modifier.fillMaxWidth(0.8f).padding(top = 16.dp),
                 color = MaterialTheme.colorScheme.primary
             )
 
@@ -89,6 +93,7 @@ fun CounterScreen(viewModel: CounterViewModel) {
                 style = MaterialTheme.typography.titleMedium,
                 modifier = Modifier.padding(top = 16.dp)
             )
+
             achievements.forEach { achievement ->
                 Text(
                     text = "\u2022 $achievement",
@@ -97,33 +102,28 @@ fun CounterScreen(viewModel: CounterViewModel) {
                 )
             }
 
-            // Reset and toggle buttons
             Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 16.dp),
-                horizontalArrangement = Arrangement.SpaceEvenly
+                modifier = Modifier.fillMaxWidth().padding(top = 20.dp),
+                horizontalArrangement = Arrangement.SpaceEvenly,
             ) {
                 Button(onClick = { viewModel.resetCounter() }) {
                     Text("Reset Counter")
                 }
 
-            }
-
-
-            val context = LocalContext.current
-            Button(
-                onClick = {
-                    val shareText = "I've opened my foldable device $counter times! Can you beat that?"
-                    val intent = Intent(Intent.ACTION_SEND).apply {
-                        type = "text/plain"
-                        putExtra(Intent.EXTRA_TEXT, shareText)
+                val context = LocalContext.current
+                Button(
+                    onClick = {
+                        val shareText =
+                            "I've opened my foldable device $counter times! Can you beat that?"
+                        val intent = Intent(Intent.ACTION_SEND).apply {
+                            type = "text/plain"
+                            putExtra(Intent.EXTRA_TEXT, shareText)
+                        }
+                        context.startActivity(Intent.createChooser(intent, "Share your fold count"))
                     }
-                    context.startActivity(Intent.createChooser(intent, "Share your fold count"))
-                },
-                modifier = Modifier.padding(top = 16.dp)
-            ) {
-                Text("Share")
+                ) {
+                    Text("Share")
+                }
             }
         }
     }

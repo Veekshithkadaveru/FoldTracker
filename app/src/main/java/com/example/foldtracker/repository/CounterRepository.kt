@@ -1,40 +1,45 @@
 package com.example.foldtracker.repository
 
 import androidx.datastore.core.DataStore
-import androidx.datastore.core.IOException
 import androidx.datastore.preferences.core.Preferences
-import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
-import androidx.datastore.preferences.core.emptyPreferences
-import androidx.datastore.preferences.core.intPreferencesKey
-import androidx.datastore.preferences.core.stringPreferencesKey
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.catch
+import com.example.foldtracker.datastore.DataStoreKeys.COUNTER_KEY
+import com.example.foldtracker.datastore.DataStoreKeys.DAILY_COUNT_KEY
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
+import kotlinx.serialization.json.Json
 import javax.inject.Inject
+import kotlinx.serialization.builtins.MapSerializer
+import kotlinx.serialization.builtins.serializer
+import kotlinx.serialization.encodeToString
 
 class CounterRepository @Inject constructor(
     private val dataStore: DataStore<Preferences>
 ) {
-
-    companion object {
-        val COUNTER_KEY = intPreferencesKey("counter_key")
-        val THEME_KEY = booleanPreferencesKey("theme_key")
+    suspend fun getCounter(): Int {
+        return dataStore.data.map { it[COUNTER_KEY] ?: 0 }.first()
     }
 
-    // Fetch the current counter value
-    suspend fun getCounter(): Int {
+    suspend fun updateCounter(newValue: Int) {
+        dataStore.edit { it[COUNTER_KEY] = newValue }
+    }
+
+    suspend fun getDailyCount(date: String): Int {
         return dataStore.data.map { preferences ->
-            preferences[COUNTER_KEY] ?: 0
+            val dailyCountsMap = preferences[DAILY_COUNT_KEY]?.let { json ->
+                Json.decodeFromString<Map<String, Int>>(json)
+            } ?: emptyMap()
+            dailyCountsMap[date] ?: 0
         }.first()
     }
 
-    // Update the counter value
-    suspend fun updateCounter(newValue: Int) {
+    suspend fun updateDailyCount(date: String, newValue: Int) {
         dataStore.edit { preferences ->
-            preferences[COUNTER_KEY] = newValue
+            val dailyCountsMap = preferences[DAILY_COUNT_KEY]?.let { json ->
+                Json.decodeFromString<Map<String, Int>>(json)
+            } ?: emptyMap()
+            val updatedMap = dailyCountsMap.toMutableMap().apply { put(date, newValue) }
+            preferences[DAILY_COUNT_KEY] = Json.encodeToString(updatedMap)
         }
     }
-
 }

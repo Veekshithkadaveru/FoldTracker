@@ -3,7 +3,7 @@ plugins {
     alias(libs.plugins.jetbrainsKotlinAndroid)
     id("kotlin-kapt")
     id("dagger.hilt.android.plugin")
-   // id("org.jetbrains.kotlin.plugin.serialization")
+
 }
 
 android {
@@ -73,6 +73,8 @@ dependencies {
     kapt("androidx.hilt:hilt-compiler:1.2.0")
     implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0")
+    implementation("androidx.glance:glance-appwidget:1.1.1")
+
 
 
     testImplementation(libs.junit)

@@ -19,6 +19,7 @@ import androidx.glance.layout.Spacer
 import androidx.glance.layout.fillMaxSize
 import androidx.glance.layout.height
 import androidx.glance.layout.padding
+import androidx.glance.state.PreferencesGlanceStateDefinition
 import androidx.glance.text.FontWeight
 import androidx.glance.text.Text
 import androidx.glance.text.TextStyle
@@ -30,16 +31,18 @@ import kotlinx.coroutines.runBlocking
 
 class FoldCountWidget : GlanceAppWidget() {
 
-    @RequiresApi(Build.VERSION_CODES.O)
     override suspend fun provideGlance(context: Context, id: GlanceId) {
-        val dailyCount = getDailyCount(context)
-        val totalCount = getTotalCount(context)
+        // Fetch data from DataStore
+        val preferences = context.dataStore.data.first()
+        val dailyCount = preferences[DAILY_COUNT_KEY] ?: "0"
+        val totalCount = preferences[COUNTER_KEY] ?: 0
 
+        // Provide the UI content
         provideContent {
             GlanceTheme {
                 Column(
                     modifier = GlanceModifier.fillMaxSize()
-                        .background(Color.DarkGray)
+                        .background(Color.White)
                         .padding(16.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalAlignment = Alignment.CenterHorizontally
@@ -56,24 +59,10 @@ class FoldCountWidget : GlanceAppWidget() {
         }
     }
 
-    private fun getDailyCount(context: Context): Int {
-        return runBlocking {
-            val preferences = context.dataStore.data.first()
-            preferences[DAILY_COUNT_KEY]?.toIntOrNull() ?: 0
-        }
-    }
-
-    private fun getTotalCount(context: Context): Int {
-        return runBlocking {
-            val preferences = context.dataStore.data.first()
-            preferences[COUNTER_KEY] ?: 0
-        }
-    }
-
     companion object {
         suspend fun updateWidget(context: Context) {
+            // Update all instances of the widget
             FoldCountWidget().updateAll(context)
         }
     }
 }
-

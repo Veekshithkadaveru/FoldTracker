@@ -1,5 +1,8 @@
 package com.example.foldtracker.viewmodel
 
+import android.content.Context
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.foldtracker.repository.CounterRepository
@@ -10,6 +13,7 @@ import kotlinx.coroutines.launch
 import java.time.LocalDate
 import javax.inject.Inject
 
+@RequiresApi(Build.VERSION_CODES.O)
 @HiltViewModel
 class CounterViewModel @Inject constructor(
     private val repository: CounterRepository
@@ -27,6 +31,7 @@ class CounterViewModel @Inject constructor(
     private val _progressToNextAchievement = MutableStateFlow(0f)
     val progressToNextAchievement: StateFlow<Float> = _progressToNextAchievement
 
+    @RequiresApi(Build.VERSION_CODES.O)
     private val today: String = LocalDate.now().toString()
 
     init {
@@ -37,7 +42,7 @@ class CounterViewModel @Inject constructor(
         }
     }
 
-    fun incrementCounter() {
+    fun incrementCounter(context: Context) {
         viewModelScope.launch {
             val newCounter = _counter.value + 1
             val newDailyCount = _dailyFolds.value + 1
@@ -45,19 +50,19 @@ class CounterViewModel @Inject constructor(
             _counter.value = newCounter
             _dailyFolds.value = newDailyCount
 
-            repository.updateCounter(newCounter)
-            repository.updateDailyCount(today, newDailyCount)
+            repository.updateCounter(newCounter,context)
+            repository.updateDailyCount(today, newDailyCount,context)
 
             updateAchievementsAndProgress(newCounter)
         }
     }
 
-    fun resetCounter() {
+    fun resetCounter(context: Context) {
         viewModelScope.launch {
             _counter.value = 0
             _dailyFolds.value = 0
-            repository.updateCounter(0)
-            repository.updateDailyCount(today, 0)
+            repository.updateCounter(0,context)
+            repository.updateDailyCount(today, 0,context)
             updateAchievementsAndProgress(0)
         }
     }

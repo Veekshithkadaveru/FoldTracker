@@ -40,6 +40,7 @@ class MainActivity : ComponentActivity() {
     @Composable
     @RequiresApi(Build.VERSION_CODES.O)
     private fun TrackFoldingEvents(viewModel: CounterViewModel) {
+        val context = LocalContext.current
         val windowInfoTracker = WindowInfoTracker.getOrCreate(LocalContext.current)
         val activity = LocalContext.current as Activity
 
@@ -70,7 +71,7 @@ class MainActivity : ComponentActivity() {
                 // Log and update counter
                 if (isFolded) {
                     Log.d("FoldTracker", "Device is folded!")
-                    viewModel.incrementCounter()
+                    viewModel.incrementCounter(context)
                 } else {
                     Log.d("FoldTracker", "Device is NOT folded.")
                 }

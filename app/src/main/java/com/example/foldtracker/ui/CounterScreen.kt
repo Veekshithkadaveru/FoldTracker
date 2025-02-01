@@ -1,6 +1,8 @@
 package com.example.foldtracker.ui
 
 import android.content.Intent
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -29,8 +31,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.foldtracker.viewmodel.CounterViewModel
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun CounterScreen(viewModel: CounterViewModel) {
+    val context = LocalContext.current
     val counter by viewModel.counter.collectAsState()
     val dailyFolds by viewModel.dailyFolds.collectAsState()
     val achievements by viewModel.achievements.collectAsState()
@@ -106,7 +110,7 @@ fun CounterScreen(viewModel: CounterViewModel) {
                 modifier = Modifier.fillMaxWidth().padding(top = 20.dp),
                 horizontalArrangement = Arrangement.SpaceEvenly,
             ) {
-                Button(onClick = { viewModel.resetCounter() }) {
+                Button(onClick = { viewModel.resetCounter(context) }) {
                     Text("Reset Counter")
                 }
 

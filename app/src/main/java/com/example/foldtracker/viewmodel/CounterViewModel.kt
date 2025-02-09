@@ -6,6 +6,7 @@ import androidx.annotation.RequiresApi
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.foldtracker.repository.CounterRepository
+import com.example.foldtracker.widget.FoldCountWidget
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -50,22 +51,25 @@ class CounterViewModel @Inject constructor(
             _counter.value = newCounter
             _dailyFolds.value = newDailyCount
 
-            repository.updateCounter(newCounter,context)
-            repository.updateDailyCount(today, newDailyCount,context)
+            repository.updateCounter(newCounter, context)
+            repository.updateDailyCount(today, newDailyCount, context) // Use today's date
 
             updateAchievementsAndProgress(newCounter)
+            FoldCountWidget.updateWidget(context)
         }
     }
+
 
     fun resetCounter(context: Context) {
         viewModelScope.launch {
             _counter.value = 0
             _dailyFolds.value = 0
-            repository.updateCounter(0,context)
-            repository.updateDailyCount(today, 0,context)
+            repository.updateCounter(0, context)
+            repository.updateDailyCount(today, 0, context)
             updateAchievementsAndProgress(0)
         }
     }
+
 
     private fun updateAchievementsAndProgress(count: Int) {
         val newAchievements = mutableListOf<String>()
@@ -85,4 +89,22 @@ class CounterViewModel @Inject constructor(
         }
         _progressToNextAchievement.value = progress
     }
+
+    fun initializeData(context: Context) {
+        viewModelScope.launch {
+            val lastSavedDate = repository.getLastUpdatedDate()
+
+            if (lastSavedDate != today) {
+                repository.updateDailyCount(today, 0, context)
+                repository.updateLastUpdatedDate(today, context)
+                _dailyFolds.value = 0
+            } else {
+                _dailyFolds.value = repository.getDailyCount(today)
+            }
+
+            _counter.value = repository.getCounter()
+            updateAchievementsAndProgress(_counter.value)
+        }
+    }
+
 }

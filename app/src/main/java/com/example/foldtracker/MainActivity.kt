@@ -8,19 +8,14 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.platform.LocalContext
-import androidx.lifecycle.lifecycleScope
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.window.layout.FoldingFeature
 import androidx.window.layout.WindowInfoTracker
-import androidx.window.layout.WindowLayoutInfo
 import com.example.foldtracker.ui.navigation.AppNavigation
 import com.example.foldtracker.viewmodel.CounterViewModel
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.launch
-import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.compose.LocalLifecycleOwner
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -31,7 +26,9 @@ class MainActivity : ComponentActivity() {
         setContent {
             val viewModel: CounterViewModel = hiltViewModel()
 
-            // App navigation and folding event tracking
+
+            val context = LocalContext.current
+            viewModel.initializeData(context)
             AppNavigation(viewModel = viewModel)
             TrackFoldingEvents(viewModel = viewModel)
         }
@@ -78,7 +75,5 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
-
-
 
 }

@@ -22,6 +22,7 @@ import androidx.glance.layout.padding
 import androidx.glance.text.FontWeight
 import androidx.glance.text.Text
 import androidx.glance.text.TextStyle
+import com.example.foldtracker.datastore.DataStoreKeys
 import com.example.foldtracker.datastore.DataStoreKeys.COUNTER_KEY
 import com.example.foldtracker.di.dataStore
 import kotlinx.coroutines.flow.first
@@ -34,6 +35,7 @@ class FoldCountWidget : GlanceAppWidget() {
         // Fetch data from DataStore
         val preferences = context.dataStore.data.first()
         val today = LocalDate.now().toString()
+        val dailyCount = preferences[DataStoreKeys.dailyCountKey(today)] ?: 0
         val totalCount = preferences[COUNTER_KEY] ?: 0
 
         // Provide the UI content
@@ -51,7 +53,7 @@ class FoldCountWidget : GlanceAppWidget() {
                         style = TextStyle(fontSize = 18.sp, fontWeight = FontWeight.Bold)
                     )
                     Spacer(modifier = GlanceModifier.height(8.dp))
-                    Text(text = "Daily: $today")
+                    Text(text = "Daily: $dailyCount")
                     Text(text = "Total: $totalCount")
                 }
             }

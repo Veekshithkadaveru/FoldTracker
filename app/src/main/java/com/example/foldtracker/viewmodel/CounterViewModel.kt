@@ -2,6 +2,7 @@ package com.example.foldtracker.viewmodel
 
 import android.content.Context
 import android.os.Build
+import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -32,13 +33,31 @@ class CounterViewModel @Inject constructor(
     private val _progressToNextAchievement = MutableStateFlow(0f)
     val progressToNextAchievement: StateFlow<Float> = _progressToNextAchievement
 
-    @RequiresApi(Build.VERSION_CODES.O)
     private val today: String = LocalDate.now().toString()
 
     init {
         viewModelScope.launch {
-            _counter.value = repository.getCounter()
-            _dailyFolds.value = repository.getDailyCount(today)
+            val storedCounter = repository.getCounter()
+
+
+            if (!repository.isFirstLaunchDone()) {
+                repository.updateCounter(0)
+                repository.setFirstLaunchDone()
+                _counter.value = 0
+            } else {
+                _counter.value = storedCounter
+            }
+
+            val lastSavedDate = repository.getLastUpdatedDate()
+
+            if (lastSavedDate.isEmpty() || lastSavedDate != today) {
+                repository.updateDailyCount(today, 0)
+                repository.updateLastUpdatedDate(today)
+                _dailyFolds.value = 0
+            } else {
+                _dailyFolds.value = repository.getDailyCount(today)
+            }
+
             updateAchievementsAndProgress(_counter.value)
         }
     }
@@ -51,60 +70,42 @@ class CounterViewModel @Inject constructor(
             _counter.value = newCounter
             _dailyFolds.value = newDailyCount
 
-            repository.updateCounter(newCounter, context)
-            repository.updateDailyCount(today, newDailyCount, context) // Use today's date
+            repository.updateCounter(newCounter)
+            repository.updateDailyCount(today, newDailyCount)
 
             updateAchievementsAndProgress(newCounter)
             FoldCountWidget.updateWidget(context)
         }
     }
 
-
     fun resetCounter(context: Context) {
         viewModelScope.launch {
             _counter.value = 0
             _dailyFolds.value = 0
-            repository.updateCounter(0, context)
-            repository.updateDailyCount(today, 0, context)
+            repository.updateCounter(0)
+            repository.updateDailyCount(today, 0)
             updateAchievementsAndProgress(0)
+            FoldCountWidget.updateWidget(context)
         }
     }
-
 
     private fun updateAchievementsAndProgress(count: Int) {
         val newAchievements = mutableListOf<String>()
         val milestones = listOf(10, 50, 100, 500)
 
         milestones.forEach { milestone ->
-            if (count >= milestone) newAchievements.add("Unlocked $milestone folds!")
+            if (count >= milestone) {
+                newAchievements.add("Unlocked $milestone folds!")
+            }
         }
 
         _achievements.value = newAchievements
 
         val nextMilestone = milestones.firstOrNull { it > count } ?: milestones.last()
-        val progress = if (count < nextMilestone) {
+        _progressToNextAchievement.value = if (count < nextMilestone) {
             count.toFloat() / nextMilestone
         } else {
             1f
         }
-        _progressToNextAchievement.value = progress
     }
-
-    fun initializeData(context: Context) {
-        viewModelScope.launch {
-            val lastSavedDate = repository.getLastUpdatedDate()
-
-            if (lastSavedDate != today) {
-                repository.updateDailyCount(today, 0, context)
-                repository.updateLastUpdatedDate(today, context)
-                _dailyFolds.value = 0
-            } else {
-                _dailyFolds.value = repository.getDailyCount(today)
-            }
-
-            _counter.value = repository.getCounter()
-            updateAchievementsAndProgress(_counter.value)
-        }
-    }
-
 }

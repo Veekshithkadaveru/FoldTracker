@@ -26,9 +26,6 @@ class MainActivity : ComponentActivity() {
         setContent {
             val viewModel: CounterViewModel = hiltViewModel()
 
-
-            val context = LocalContext.current
-            viewModel.initializeData(context)
             AppNavigation(viewModel = viewModel)
             TrackFoldingEvents(viewModel = viewModel)
         }
@@ -45,27 +42,21 @@ class MainActivity : ComponentActivity() {
             val layoutInfoFlow = windowInfoTracker.windowLayoutInfo(activity)
 
             layoutInfoFlow.collect { layoutInfo ->
-                // Log all display features for debugging
                 layoutInfo.displayFeatures.forEach { feature ->
                     Log.d("FoldTracker", "Feature: $feature")
+
                     if (feature is FoldingFeature) {
-                        Log.d(
-                            "FoldTracker",
-                            "State: ${feature.state}, Orientation: ${feature.orientation}, Bounds: ${feature.bounds}"
-                        )
+                        Log.d("FoldTracker", "State: ${feature.state}, Orientation: ${feature.orientation}, Bounds: ${feature.bounds}")
                     }
                 }
 
-                // Handle "folded" detection
                 val isFolded = layoutInfo.displayFeatures.any { feature ->
                     feature is FoldingFeature && (
-                            feature.state == FoldingFeature.State.HALF_OPENED ||  // Common folded state
-                                    (Build.MANUFACTURER.equals("Google", ignoreCase = true) &&
-                                            feature.state == FoldingFeature.State.FLAT) // Pixel Fold adjustment
+                            feature.state == FoldingFeature.State.FLAT ||
+                                    (Build.MANUFACTURER.equals("Google", ignoreCase = true) && feature.state == FoldingFeature.State.HALF_OPENED)
                             )
                 }
 
-                // Log and update counter
                 if (isFolded) {
                     Log.d("FoldTracker", "Device is folded!")
                     viewModel.incrementCounter(context)

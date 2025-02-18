@@ -3,6 +3,8 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
+
 
     <application
         android:name=".di.FoldTrackerApp"
@@ -38,6 +40,10 @@
                 android:name="android.appwidget.provider"
                 android:resource="@xml/fold_count_widget_info" />
         </receiver>
+        <service
+            android:name=".service.FoldTrackerService"
+            android:exported="false"
+            android:foregroundServiceType="dataSync"/>
 
     </application>
 </manifest>

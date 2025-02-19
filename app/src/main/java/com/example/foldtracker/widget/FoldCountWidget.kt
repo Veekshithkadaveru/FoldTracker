@@ -49,7 +49,7 @@ class FoldCountWidget : GlanceAppWidget() {
             Column(
                 modifier = GlanceModifier
                     .wrapContentSize()
-                    .background(ColorProvider(R.color.light_gray)) // ✅ Use color resources
+                    .background(ColorProvider(R.color.light_gray))
                     .padding(16.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalAlignment = Alignment.CenterHorizontally
@@ -60,17 +60,16 @@ class FoldCountWidget : GlanceAppWidget() {
                     style = TextStyle(
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Bold,
-                        color = ColorProvider(R.color.dark_gray) // ✅ Use color resource
+                        color = ColorProvider(R.color.dark_gray)
                     )
                 )
 
                 Spacer(modifier = GlanceModifier.height(16.dp))
 
-                // Daily Folds Card
                 Box(
                     modifier = GlanceModifier
                         .wrapContentSize()
-                        .background(ColorProvider(R.color.card_white)) // ✅ Use color resource
+                        .background(ColorProvider(R.color.card_white))
                         .padding(8.dp)
                 ) {
                     Column(
@@ -98,11 +97,11 @@ class FoldCountWidget : GlanceAppWidget() {
 
                 Spacer(modifier = GlanceModifier.height(16.dp))
 
-                // Total Folds Card
+
                 Box(
                     modifier = GlanceModifier
                         .wrapContentSize()
-                        .background(ColorProvider(R.color.card_white)) // ✅ Use color resource
+                        .background(ColorProvider(R.color.card_white))
                         .padding(8.dp)
                 ) {
                     Column(
@@ -132,9 +131,7 @@ class FoldCountWidget : GlanceAppWidget() {
     }
 
     companion object {
-        /**
-         * Call this function to update all instances of the widget.
-         */
+
         suspend fun updateWidget(context: Context) {
             FoldCountWidget().updateAll(context)
         }

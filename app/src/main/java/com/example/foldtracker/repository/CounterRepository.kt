@@ -38,9 +38,11 @@ class CounterRepository @Inject constructor(
         }
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     suspend fun getLastUpdatedDate(): String {
-        return dataStore.data.map { it[DataStoreKeys.LAST_UPDATED_DATE_KEY] ?: "" }.first()
+        return dataStore.data.map { it[DataStoreKeys.LAST_UPDATED_DATE_KEY] ?: getTodayDate() }.first()
     }
+
 
     suspend fun updateLastUpdatedDate(date: String) {
         dataStore.edit { preferences ->
@@ -51,4 +53,3 @@ class CounterRepository @Inject constructor(
     @RequiresApi(Build.VERSION_CODES.O)
     fun getTodayDate(): String = LocalDate.now().toString()
 }
-

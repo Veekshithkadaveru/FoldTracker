@@ -17,8 +17,13 @@ import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import com.example.foldtracker.repository.CounterRepository
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.NonCancellable.isActive
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import java.time.LocalDate
 import javax.inject.Inject
 
@@ -58,7 +63,6 @@ class FoldTrackerService : Service(), SensorEventListener {
         }
     }
 
-
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onSensorChanged(event: SensorEvent?) {
         if (event?.sensor?.type == Sensor.TYPE_HINGE_ANGLE) {
@@ -66,27 +70,33 @@ class FoldTrackerService : Service(), SensorEventListener {
             Log.d("FoldTrackerService", "Hinge angle: $angle")
 
             if (angle < 10f) {
-
                 serviceScope.launch { updateCounts() }
             }
         }
     }
 
-    override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
-        // Not used in this example.
+    override fun onAccuracyChanged(p0: Sensor?, p1: Int) {
+        //("Not yet implemented")
     }
-
 
     @RequiresApi(Build.VERSION_CODES.O)
     private suspend fun updateCounts() {
         val today = LocalDate.now().toString()
+        val lastSavedDate = repository.getLastUpdatedDate()
+
+        if (lastSavedDate != today) {
+            repository.updateDailyCount(today, 0)
+            repository.updateLastUpdatedDate(today)
+        }
+
         val currentDaily = repository.getDailyCount(today)
         repository.updateDailyCount(today, currentDaily + 1)
+
         val currentTotal = repository.getCounter()
         repository.updateCounter(currentTotal + 1)
+
         Log.d("FoldTrackerService", "Counts updated via sensor.")
     }
-
 
     @RequiresApi(Build.VERSION_CODES.O)
     private suspend fun trackFoldEventsSimulated() {
@@ -99,7 +109,6 @@ class FoldTrackerService : Service(), SensorEventListener {
             }
         }
     }
-
 
     @RequiresApi(Build.VERSION_CODES.O)
     private fun createNotification(): Notification {

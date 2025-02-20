@@ -2,6 +2,7 @@ package com.example.foldtracker.viewmodel
 
 import android.content.Context
 import android.os.Build
+import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -15,6 +16,7 @@ import java.time.LocalDate
 import javax.inject.Inject
 
 @RequiresApi(Build.VERSION_CODES.O)
+
 @HiltViewModel
 class CounterViewModel @Inject constructor(
     private val repository: CounterRepository
@@ -32,16 +34,19 @@ class CounterViewModel @Inject constructor(
     private val _progressToNextAchievement = MutableStateFlow(0f)
     val progressToNextAchievement: StateFlow<Float> = _progressToNextAchievement
 
-
     private val today: String = LocalDate.now().toString()
 
     init {
         viewModelScope.launch {
 
-            _counter.value = repository.getCounter()
+            val storedCounter = repository.getCounter()
+            Log.d("CounterViewModel", "Stored total counter: $storedCounter")
+            _counter.value = storedCounter
 
-
+            // Retrieve last updated date from DataStore
             val lastSavedDate = repository.getLastUpdatedDate()
+            Log.d("CounterViewModel", "Last updated date: '$lastSavedDate', Today: '$today'")
+
             if (lastSavedDate.isEmpty() || lastSavedDate != today) {
                 repository.updateDailyCount(today, 0)
                 repository.updateLastUpdatedDate(today)
@@ -53,7 +58,6 @@ class CounterViewModel @Inject constructor(
             updateAchievementsAndProgress(_counter.value)
         }
     }
-
 
     fun incrementCounter(context: Context) {
         viewModelScope.launch {
@@ -72,7 +76,6 @@ class CounterViewModel @Inject constructor(
         }
     }
 
-
     fun resetCounter(context: Context) {
         viewModelScope.launch {
             _counter.value = 0
@@ -80,7 +83,6 @@ class CounterViewModel @Inject constructor(
             repository.updateCounter(0)
             repository.updateDailyCount(today, 0)
             updateAchievementsAndProgress(0)
-
             FoldCountWidget.updateWidget(context)
         }
     }
@@ -108,6 +110,7 @@ class CounterViewModel @Inject constructor(
     fun initializeData(context: Context) {
         viewModelScope.launch {
             val lastSavedDate = repository.getLastUpdatedDate()
+            Log.d("CounterViewModel", "initializeData: Last updated date: '$lastSavedDate', Today: '$today'")
             if (lastSavedDate.isEmpty() || lastSavedDate != today) {
                 repository.updateDailyCount(today, 0)
                 repository.updateLastUpdatedDate(today)
@@ -121,3 +124,4 @@ class CounterViewModel @Inject constructor(
         }
     }
 }
+

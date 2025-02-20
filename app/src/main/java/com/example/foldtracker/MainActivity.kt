@@ -60,7 +60,7 @@ class MainActivity : ComponentActivity() {
                     }
                 }
 
-                // Handle "folded" detection
+
                 val isFolded = layoutInfo.displayFeatures.any { feature ->
                     feature is FoldingFeature && (
                             feature.state == FoldingFeature.State.HALF_OPENED ||  // Common folded state
@@ -69,7 +69,6 @@ class MainActivity : ComponentActivity() {
                             )
                 }
 
-                // Log and update counter
                 if (isFolded) {
                     Log.d("FoldTracker", "Device is folded!")
                     viewModel.incrementCounter(context)

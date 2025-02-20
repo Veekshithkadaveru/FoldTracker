@@ -32,16 +32,15 @@ class CounterViewModel @Inject constructor(
     private val _progressToNextAchievement = MutableStateFlow(0f)
     val progressToNextAchievement: StateFlow<Float> = _progressToNextAchievement
 
-    // Use today's date as a String in "YYYY-MM-DD" format.
+
     private val today: String = LocalDate.now().toString()
 
     init {
         viewModelScope.launch {
-            // Load the total counter from DataStore.
+
             _counter.value = repository.getCounter()
 
-            // If the last saved date is empty or not equal to today,
-            // reset daily folds and update the last updated date.
+
             val lastSavedDate = repository.getLastUpdatedDate()
             if (lastSavedDate.isEmpty() || lastSavedDate != today) {
                 repository.updateDailyCount(today, 0)
@@ -55,9 +54,7 @@ class CounterViewModel @Inject constructor(
         }
     }
 
-    /**
-     * Increments both the total and daily fold counters.
-     */
+
     fun incrementCounter(context: Context) {
         viewModelScope.launch {
             val newCounter = _counter.value + 1
@@ -71,14 +68,11 @@ class CounterViewModel @Inject constructor(
 
             updateAchievementsAndProgress(newCounter)
 
-            // Update the widget if integrated (pass context if needed).
             FoldCountWidget.updateWidget(context)
         }
     }
 
-    /**
-     * Resets both the total and daily fold counters.
-     */
+
     fun resetCounter(context: Context) {
         viewModelScope.launch {
             _counter.value = 0
@@ -91,9 +85,6 @@ class CounterViewModel @Inject constructor(
         }
     }
 
-    /**
-     * Updates achievements and progress based on the total fold count.
-     */
     private fun updateAchievementsAndProgress(count: Int) {
         val newAchievements = mutableListOf<String>()
         val milestones = listOf(10, 50, 100, 500)
@@ -113,10 +104,7 @@ class CounterViewModel @Inject constructor(
         }
     }
 
-    /**
-     * Initializes data by checking if the stored last updated date matches today.
-     * If not, resets daily folds.
-     */
+
     fun initializeData(context: Context) {
         viewModelScope.launch {
             val lastSavedDate = repository.getLastUpdatedDate()

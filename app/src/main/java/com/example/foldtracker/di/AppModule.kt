@@ -18,14 +18,14 @@ val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "fo
 @InstallIn(SingletonComponent::class)
 object AppModule {
 
-    // Provide DataStore instance
+
     @Provides
     @Singleton
     fun provideDataStore(@ApplicationContext context: Context): DataStore<Preferences> {
         return context.dataStore
     }
 
-    // Provide CounterRepository
+
     @Provides
     @Singleton
     fun provideCounterRepository(

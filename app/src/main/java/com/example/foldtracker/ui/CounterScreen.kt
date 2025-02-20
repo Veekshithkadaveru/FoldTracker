@@ -60,35 +60,73 @@ fun CounterScreen(viewModel: CounterViewModel) {
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            AnimatedContent(targetState = counter) { targetCounter ->
-                Card(
-                    modifier = Modifier.wrapContentSize().padding(16.dp),
-                    colors = CardDefaults.cardColors(MaterialTheme.colorScheme.surface),
-                    shape = RoundedCornerShape(20.dp),
-                    elevation = CardDefaults.cardElevation(12.dp)
-                ) {
-                    Column(
-                        modifier = Modifier.padding(16.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 20.dp),
+                horizontalArrangement = Arrangement.SpaceEvenly,
+            ) {
+                AnimatedContent(targetState = counter) { targetCounter ->
+                    Card(
+                        modifier = Modifier
+                            .wrapContentSize()
+                            .padding(16.dp),
+                        colors = CardDefaults.cardColors(MaterialTheme.colorScheme.outlineVariant),
+                        shape = RoundedCornerShape(20.dp),
+                        elevation = CardDefaults.cardElevation(12.dp)
                     ) {
-                        Text(
-                            text = "$targetCounter times folded",
-                            style = MaterialTheme.typography.displaySmall,
-                            fontWeight = FontWeight.Bold
-                        )
-                        Text(
-                            text = "Today's folds: $dailyFolds", // ✅ Show daily count
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Medium,
-                            modifier = Modifier.padding(top = 8.dp)
-                        )
+                        Column(
+                            modifier = Modifier.padding(16.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Text(
+                                text = "Total Folds",
+                                style = MaterialTheme.typography.titleLarge,
+                                fontWeight = FontWeight.Bold
+                            )
+                            Text(
+                                text = "$targetCounter",
+                                style = MaterialTheme.typography.displayMedium,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
                     }
                 }
+                AnimatedContent(targetState = dailyFolds){dailyFolds->
+                    Card(
+                        modifier = Modifier
+                            .wrapContentSize()
+                            .padding(16.dp),
+                        colors = CardDefaults.cardColors(MaterialTheme.colorScheme.outlineVariant),
+                        shape = RoundedCornerShape(20.dp),
+                        elevation = CardDefaults.cardElevation(12.dp)
+                    ) {
+                        Column(
+                            modifier = Modifier.padding(16.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Text(
+                                text = "Today Folds",
+                                style = MaterialTheme.typography.titleLarge,
+                                fontWeight = FontWeight.Bold
+                            )
+                            Text(
+                                text = "$dailyFolds",
+                                style = MaterialTheme.typography.displayMedium,
+                                fontWeight = FontWeight.Bold
+                            )
+
+                        }
+                    }
+                }
+
             }
 
             LinearProgressIndicator(
                 progress = progress.coerceIn(0f, 1f),
-                modifier = Modifier.fillMaxWidth(0.8f).padding(top = 16.dp),
+                modifier = Modifier
+                    .fillMaxWidth(0.8f)
+                    .padding(top = 16.dp),
                 color = MaterialTheme.colorScheme.primary
             )
 
@@ -107,7 +145,9 @@ fun CounterScreen(viewModel: CounterViewModel) {
             }
 
             Row(
-                modifier = Modifier.fillMaxWidth().padding(top = 20.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 20.dp),
                 horizontalArrangement = Arrangement.SpaceEvenly,
             ) {
                 Button(onClick = { viewModel.resetCounter(context) }) {

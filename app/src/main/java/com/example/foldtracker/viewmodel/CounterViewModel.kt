@@ -63,8 +63,11 @@ class CounterViewModel @Inject constructor(
 
     fun incrementCounter(context: Context) {
         viewModelScope.launch {
-            val newCounter = _counter.value + 1
-            val newDailyCount = _dailyFolds.value + 1
+            val currentCounter = repository.getCounter()
+            val currentDailyCount = repository.getDailyCount(today)
+
+            val newCounter = currentCounter + 1
+            val newDailyCount = currentDailyCount + 1
 
             _counter.value = newCounter
             _dailyFolds.value = newDailyCount
@@ -113,14 +116,19 @@ class CounterViewModel @Inject constructor(
         viewModelScope.launch {
             val lastSavedDate = repository.getLastUpdatedDate()
             Log.d("CounterViewModel", "initializeData: Last updated date: '$lastSavedDate', Today: '$today'")
-            if (lastSavedDate.isEmpty() || lastSavedDate != today) {
-                repository.updateDailyCount(today, 0)
-                repository.updateLastUpdatedDate(today)
-                _dailyFolds.value = 0
+
+            val storedCounter = repository.getCounter()
+            val storedDailyCount = if (lastSavedDate == today) {
+                repository.getDailyCount(today)
             } else {
-                _dailyFolds.value = repository.getDailyCount(today)
+                repository.updateDailyCount(today, 0)
+                0
             }
-            _counter.value = repository.getCounter()
+
+            _counter.value = storedCounter
+            _dailyFolds.value = storedDailyCount
+            repository.updateLastUpdatedDate(today)
+
             updateAchievementsAndProgress(_counter.value)
             FoldCountWidget.updateWidget(context)
         }

@@ -52,7 +52,7 @@ class CounterRepository @Inject constructor(
 
                 preferences[COUNTER_KEY] = 0
                 preferences[DataStoreKeys.LAST_UPDATED_DATE_KEY] = getTodayDate()
-                preferences[DataStoreKeys.FIRST_LAUNCH_KEY] = false // Mark first launch as done
+                preferences[DataStoreKeys.FIRST_LAUNCH_KEY] = false
             }
         }
     }

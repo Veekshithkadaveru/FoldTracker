@@ -43,6 +43,19 @@ class CounterRepository @Inject constructor(
         return dataStore.data.map { it[DataStoreKeys.LAST_UPDATED_DATE_KEY] ?: getTodayDate() }.first()
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
+    suspend fun initializeDefaultValues() {
+        dataStore.edit { preferences ->
+
+            val isFirstLaunch = preferences[DataStoreKeys.FIRST_LAUNCH_KEY] ?: true
+            if (isFirstLaunch) {
+
+                preferences[COUNTER_KEY] = 0
+                preferences[DataStoreKeys.LAST_UPDATED_DATE_KEY] = getTodayDate()
+                preferences[DataStoreKeys.FIRST_LAUNCH_KEY] = false // Mark first launch as done
+            }
+        }
+    }
 
     suspend fun updateLastUpdatedDate(date: String) {
         dataStore.edit { preferences ->

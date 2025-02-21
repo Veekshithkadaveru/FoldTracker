@@ -39,11 +39,13 @@ class CounterViewModel @Inject constructor(
     init {
         viewModelScope.launch {
 
+            repository.initializeDefaultValues()
+
             val storedCounter = repository.getCounter()
             Log.d("CounterViewModel", "Stored total counter: $storedCounter")
             _counter.value = storedCounter
 
-            // Retrieve last updated date from DataStore
+
             val lastSavedDate = repository.getLastUpdatedDate()
             Log.d("CounterViewModel", "Last updated date: '$lastSavedDate', Today: '$today'")
 

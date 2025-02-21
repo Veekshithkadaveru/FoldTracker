@@ -5,6 +5,17 @@ import android.content.Intent
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.SizeTransform
+import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -97,9 +108,18 @@ fun CounterStats(counter: Int, dailyFolds: Int) {
 
 @Composable
 fun CounterCard(label: String, count: Int) {
-    AnimatedContent(targetState = count) { targetCount ->
+    AnimatedContent(
+        targetState = count,
+        transitionSpec = {
+            (slideInVertically { height -> -height } + fadeIn() + scaleIn(initialScale = 0.8f))
+                .togetherWith(slideOutVertically
+                { height -> height } + fadeOut() + scaleOut(targetScale = 1.2f))
+                .using(SizeTransform(clip = false))
+        }
+    ) { targetCount ->
         Card(
-            modifier = Modifier.padding(16.dp),
+            modifier = Modifier
+                .padding(16.dp),
             colors = CardDefaults.cardColors(MaterialTheme.colorScheme.outlineVariant),
             shape = RoundedCornerShape(20.dp),
             elevation = CardDefaults.cardElevation(12.dp)
@@ -108,12 +128,24 @@ fun CounterCard(label: String, count: Int) {
                 modifier = Modifier.padding(16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text(text = label, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-                Text(text = "$targetCount", style = MaterialTheme.typography.displayMedium, fontWeight = FontWeight.Bold)
+                Text(
+                    text = label,
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    text = "$targetCount",
+                    style = MaterialTheme.typography.displayMedium,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.animateContentSize(
+                        animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy)
+                    )
+                )
             }
         }
     }
 }
+
 
 @Composable
 fun ProgressBar(progress: Float) {
@@ -168,7 +200,12 @@ fun AchievementSection(achievements: List<String>) {
 }
 
 @Composable
-fun ActionButtons(counter: Int, viewModel: CounterViewModel, context: Context, onResetClick: () -> Unit) {
+fun ActionButtons(
+    counter: Int,
+    viewModel: CounterViewModel,
+    context: Context,
+    onResetClick: () -> Unit
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()

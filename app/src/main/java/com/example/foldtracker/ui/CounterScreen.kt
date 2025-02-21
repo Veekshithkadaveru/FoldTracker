@@ -9,8 +9,10 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -138,19 +140,44 @@ fun CounterScreen(viewModel: CounterViewModel) {
                 color = MaterialTheme.colorScheme.primary
             )
 
-            Text(
-                text = "Achievements:",
-                style = MaterialTheme.typography.titleMedium,
-                modifier = Modifier.padding(top = 16.dp)
-            )
-
-            achievements.forEach { achievement ->
-                Text(
-                    text = "\u2022 $achievement",
-                    style = MaterialTheme.typography.bodyLarge,
-                    modifier = Modifier.padding(4.dp)
-                )
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth(0.9f)
+                    .padding(16.dp),
+                colors = CardDefaults.cardColors(MaterialTheme.colorScheme.surface),
+                shape = RoundedCornerShape(20.dp),
+                elevation = CardDefaults.cardElevation(8.dp)
+            ) {
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = "🏆 Achievements",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    if (achievements.isEmpty()) {
+                        Text(
+                            text = "No achievements yet. Keep folding!",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                        )
+                    } else {
+                        achievements.forEach { achievement ->
+                            Text(
+                                text = "✅ $achievement",
+                                style = MaterialTheme.typography.bodyLarge,
+                                modifier = Modifier.padding(4.dp),
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                        }
+                    }
+                }
             }
+
 
             Row(
                 modifier = Modifier

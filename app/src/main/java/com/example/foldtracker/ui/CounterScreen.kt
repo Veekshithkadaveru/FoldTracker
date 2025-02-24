@@ -49,6 +49,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.foldtracker.viewmodel.CounterViewModel
+import kotlinx.serialization.StringFormat
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
@@ -58,6 +59,7 @@ fun CounterScreen(viewModel: CounterViewModel) {
     val dailyFolds by viewModel.dailyFolds.collectAsState()
     val achievements by viewModel.achievements.collectAsState()
     var showDialog by remember { mutableStateOf(false) }
+    val averageFolds by viewModel.averageFolds.collectAsState()
 
     val nextMilestone = if (counter == 0) 50 else ((counter / 50) + 1) * 50
     val progress = if (counter == 0) 0f else counter / nextMilestone.toFloat()
@@ -73,7 +75,7 @@ fun CounterScreen(viewModel: CounterViewModel) {
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            CounterStats(counter, dailyFolds)
+            CounterStats(counter, dailyFolds,averageFolds)
             ProgressBar(progress)
             AchievementSection(achievements)
             ActionButtons(counter, viewModel, context) { showDialog = true }
@@ -94,7 +96,7 @@ fun gradientBackground(): Brush = Brush.verticalGradient(
 )
 
 @Composable
-fun CounterStats(counter: Int, dailyFolds: Int) {
+fun CounterStats(counter: Int, dailyFolds: Int,averageFolds:Double) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -103,11 +105,16 @@ fun CounterStats(counter: Int, dailyFolds: Int) {
     ) {
         CounterCard("Total Folds", counter)
         CounterCard("Today Folds", dailyFolds)
+
     }
+    Column {
+        CounterCard(label = "Average Folds", count = String.format("%.2f", averageFolds))
+    }
+
 }
 
 @Composable
-fun CounterCard(label: String, count: Int) {
+fun CounterCard(label: String, count: Any) {
     AnimatedContent(
         targetState = count,
         transitionSpec = {
@@ -141,6 +148,7 @@ fun CounterCard(label: String, count: Int) {
                         animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy)
                     )
                 )
+
             }
         }
     }

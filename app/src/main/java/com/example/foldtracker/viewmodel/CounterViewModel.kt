@@ -34,6 +34,9 @@ class CounterViewModel @Inject constructor(
     private val _progressToNextAchievement = MutableStateFlow(0f)
     val progressToNextAchievement: StateFlow<Float> = _progressToNextAchievement
 
+    private val _averageFolds = MutableStateFlow(0.0)
+    val averageFolds: StateFlow<Double> = _averageFolds
+
     private val today: String = LocalDate.now().toString()
 
     init {
@@ -56,7 +59,7 @@ class CounterViewModel @Inject constructor(
             } else {
                 _dailyFolds.value = repository.getDailyCount(today)
             }
-
+            calculateAverageFolds()
             updateAchievementsAndProgress(_counter.value)
         }
     }
@@ -75,6 +78,8 @@ class CounterViewModel @Inject constructor(
             repository.updateCounter(newCounter)
             repository.updateDailyCount(today, newDailyCount)
 
+            calculateAverageFolds()
+
             updateAchievementsAndProgress(newCounter)
 
             FoldCountWidget.updateWidget(context)
@@ -87,6 +92,8 @@ class CounterViewModel @Inject constructor(
             _dailyFolds.value = 0
             repository.updateCounter(0)
             repository.updateDailyCount(today, 0)
+
+            calculateAverageFolds()
             updateAchievementsAndProgress(0)
             FoldCountWidget.updateWidget(context)
         }
@@ -115,7 +122,10 @@ class CounterViewModel @Inject constructor(
     fun initializeData(context: Context) {
         viewModelScope.launch {
             val lastSavedDate = repository.getLastUpdatedDate()
-            Log.d("CounterViewModel", "initializeData: Last updated date: '$lastSavedDate', Today: '$today'")
+            Log.d(
+                "CounterViewModel",
+                "initializeData: Last updated date: '$lastSavedDate', Today: '$today'"
+            )
 
             val storedCounter = repository.getCounter()
             val storedDailyCount = if (lastSavedDate == today) {
@@ -129,8 +139,20 @@ class CounterViewModel @Inject constructor(
             _dailyFolds.value = storedDailyCount
             repository.updateLastUpdatedDate(today)
 
+            calculateAverageFolds()
+
             updateAchievementsAndProgress(_counter.value)
             FoldCountWidget.updateWidget(context)
+        }
+    }
+
+    private suspend fun calculateAverageFolds() {
+        val dailyCounts = repository.getDailyFoldCounts(7) // Calculate average for the last 7 days
+        if (dailyCounts.isNotEmpty()) {
+            val average = dailyCounts.average()
+            _averageFolds.value = average
+        } else {
+            _averageFolds.value = 0.0
         }
     }
 }

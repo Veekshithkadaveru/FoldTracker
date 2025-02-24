@@ -26,6 +26,8 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import javax.inject.Inject
+import kotlin.coroutines.cancellation.CancellationException
+import kotlinx.coroutines.*
 
 @AndroidEntryPoint
 class FoldTrackerService : Service(), SensorEventListener {
@@ -43,7 +45,6 @@ class FoldTrackerService : Service(), SensorEventListener {
         super.onCreate()
         Log.d("FoldTrackerService", "Service started")
 
-        // Initialize sensor manager and try to get the hinge angle sensor.
         sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
         hingeSensor = sensorManager.getDefaultSensor(Sensor.TYPE_HINGE_ANGLE)
 
@@ -100,7 +101,7 @@ class FoldTrackerService : Service(), SensorEventListener {
 
     @RequiresApi(Build.VERSION_CODES.O)
     private suspend fun trackFoldEventsSimulated() {
-        while (isActive) {
+        while (currentCoroutineContext().isActive) { 
             delay(5000)
 
             val simulatedFold = (System.currentTimeMillis() / 10000) % 2L == 0L

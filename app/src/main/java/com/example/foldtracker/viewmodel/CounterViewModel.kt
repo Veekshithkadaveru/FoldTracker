@@ -90,10 +90,12 @@ class CounterViewModel @Inject constructor(
         viewModelScope.launch {
             _counter.value = 0
             _dailyFolds.value = 0
+            _averageFolds.value=0.0
+
             repository.updateCounter(0)
             repository.updateDailyCount(today, 0)
+            repository.clearDailyFoldCounts()
 
-            calculateAverageFolds()
             updateAchievementsAndProgress(0)
             FoldCountWidget.updateWidget(context)
         }
@@ -147,13 +149,9 @@ class CounterViewModel @Inject constructor(
     }
 
     private suspend fun calculateAverageFolds() {
-        val dailyCounts = repository.getDailyFoldCounts(7) // Calculate average for the last 7 days
-        if (dailyCounts.isNotEmpty()) {
-            val average = dailyCounts.average()
-            _averageFolds.value = average
-        } else {
-            _averageFolds.value = 0.0
-        }
+        val dailyCounts = repository.getDailyFoldCounts(7)
+        _averageFolds.value = if (dailyCounts.isNotEmpty()) dailyCounts.average() else 0.0
     }
+
 }
 

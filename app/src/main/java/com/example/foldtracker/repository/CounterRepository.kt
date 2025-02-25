@@ -66,15 +66,24 @@ class CounterRepository @Inject constructor(
     @RequiresApi(Build.VERSION_CODES.O)
     suspend fun getDailyFoldCounts(days: Int): List<Int> {
         val today = LocalDate.now()
-        val dailyCounts = mutableListOf<Int>()
-
-        for (i in 0 until days) {
+        return (0 until days).map { i ->
             val date = today.minusDays(i.toLong()).toString()
-            val count = dataStore.data.map { it[DataStoreKeys.dailyCountKey(date)] ?: 0 }.first()
-            dailyCounts.add(count)
+            dataStore.data.first()[DataStoreKeys.dailyCountKey(date)] ?: 0
         }
-        return dailyCounts
     }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    suspend fun clearDailyFoldCounts() {
+        dataStore.edit { preferences ->
+            val today = LocalDate.now()
+            for (i in 0 until 7) {
+                val date = today.minusDays(i.toLong()).toString()
+                preferences.remove(DataStoreKeys.dailyCountKey(date))
+            }
+        }
+    }
+
+
 
     @RequiresApi(Build.VERSION_CODES.O)
     fun getTodayDate(): String = LocalDate.now().toString()

@@ -45,6 +45,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -90,8 +91,7 @@ fun CounterScreen(viewModel: CounterViewModel) {
 @Composable
 fun gradientBackground(): Brush = Brush.verticalGradient(
     colors = listOf(
-        MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
-        MaterialTheme.colorScheme.secondary.copy(alpha = 0.2f)
+        Color(0xFF0F2027), Color(0xFF203A43), Color(0xFF2C5364)
     )
 )
 

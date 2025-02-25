@@ -27,11 +27,15 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -224,6 +228,8 @@ fun ActionButtons(
             onClick = onResetClick,
             colors = ButtonDefaults.buttonColors(MaterialTheme.colorScheme.error)
         ) {
+            Icon(imageVector = Icons.Filled.Refresh, contentDescription = "Reset")
+            Spacer(modifier = Modifier.padding(4.dp) )
             Text("Reset Counter")
         }
 
@@ -237,6 +243,8 @@ fun ActionButtons(
                 context.startActivity(Intent.createChooser(intent, "Share your fold count"))
             }
         ) {
+            Icon(imageVector = Icons.Filled.Share, contentDescription = "Share")
+            Spacer(modifier = Modifier.padding(4.dp) )
             Text("Share")
         }
     }

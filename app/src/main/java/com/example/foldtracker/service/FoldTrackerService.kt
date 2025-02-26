@@ -16,6 +16,7 @@ import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import com.example.foldtracker.repository.CounterRepository
+import com.example.foldtracker.viewmodel.CounterViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -69,6 +70,10 @@ class FoldTrackerService : Service(), SensorEventListener {
         if (event?.sensor?.type == Sensor.TYPE_HINGE_ANGLE) {
             val angle = event.values[0]
             Log.d("FoldTrackerService", "Hinge angle: $angle")
+
+            serviceScope.launch {
+                repository.updateHingeAngle(angle)
+            }
 
             if (angle < 10f) {
                 serviceScope.launch { updateCounts() }

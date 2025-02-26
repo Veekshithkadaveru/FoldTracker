@@ -7,6 +7,7 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import com.example.foldtracker.datastore.DataStoreKeys
 import com.example.foldtracker.datastore.DataStoreKeys.COUNTER_KEY
+import com.example.foldtracker.datastore.DataStoreKeys.HINGE_ANGLE_KEY
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import java.time.LocalDate
@@ -15,7 +16,7 @@ import javax.inject.Singleton
 
 @Singleton
 class CounterRepository @Inject constructor(
-    private val dataStore: DataStore<Preferences>
+    val dataStore: DataStore<Preferences>
 ) {
 
     suspend fun getCounter(): Int {
@@ -83,7 +84,14 @@ class CounterRepository @Inject constructor(
         }
     }
 
-
+    suspend fun updateHingeAngle(angle: Float) {
+        dataStore.edit { preferences ->
+            preferences[HINGE_ANGLE_KEY] = angle
+        }
+    }
+    suspend fun getHingeAngle(): Float {
+        return dataStore.data.map { it[HINGE_ANGLE_KEY] ?: 0f }.first()
+    }
 
     @RequiresApi(Build.VERSION_CODES.O)
     fun getTodayDate(): String = LocalDate.now().toString()

@@ -40,7 +40,6 @@ class CounterViewModel @Inject constructor(
     private val _hingeAngle = MutableStateFlow(0f)
     val hingeAngle: StateFlow<Float> = _hingeAngle
 
-
     private val today: String = LocalDate.now().toString()
 
     init {
@@ -68,7 +67,6 @@ class CounterViewModel @Inject constructor(
             repository.dataStore.data.collect {
                 _hingeAngle.value = repository.getHingeAngle()
             }
-
 
             calculateAverageFolds()
             updateAchievementsAndProgress(_counter.value)
@@ -101,7 +99,7 @@ class CounterViewModel @Inject constructor(
         viewModelScope.launch {
             _counter.value = 0
             _dailyFolds.value = 0
-            _averageFolds.value = 0.0
+            _averageFolds.value=0.0
 
             repository.updateCounter(0)
             repository.updateDailyCount(today, 0)
@@ -164,11 +162,5 @@ class CounterViewModel @Inject constructor(
         _averageFolds.value = if (dailyCounts.isNotEmpty()) dailyCounts.average() else 0.0
     }
 
-    fun updateHingeAngle(angle: Float) {
-        viewModelScope.launch {
-            repository.updateHingeAngle(angle)
-        }
-
-    }
 }
 

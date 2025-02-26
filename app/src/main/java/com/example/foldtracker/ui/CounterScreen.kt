@@ -26,6 +26,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Refresh
@@ -52,9 +53,9 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.example.foldtracker.viewmodel.CounterViewModel
-import kotlinx.serialization.StringFormat
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
@@ -65,6 +66,7 @@ fun CounterScreen(viewModel: CounterViewModel) {
     val achievements by viewModel.achievements.collectAsState()
     var showDialog by remember { mutableStateOf(false) }
     val averageFolds by viewModel.averageFolds.collectAsState()
+    val hingeAngle by viewModel.hingeAngle.collectAsState()
 
     val nextMilestone = if (counter == 0) 50 else ((counter / 50) + 1) * 50
     val progress = if (counter == 0) 0f else counter / nextMilestone.toFloat()
@@ -80,7 +82,7 @@ fun CounterScreen(viewModel: CounterViewModel) {
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            CounterStats(counter, dailyFolds,averageFolds)
+            CounterStats(counter, dailyFolds, averageFolds, hingeAngle)
             ProgressBar(progress)
             AchievementSection(achievements)
             ActionButtons(counter, viewModel, context) { showDialog = true }
@@ -100,25 +102,43 @@ fun gradientBackground(): Brush = Brush.verticalGradient(
 )
 
 @Composable
-fun CounterStats(counter: Int, dailyFolds: Int,averageFolds:Double) {
-    Row(
+fun CounterStats(counter: Int, dailyFolds: Int, averageFolds: Double, hingeAngle: Float) {
+    Column(
         modifier = Modifier
             .fillMaxWidth()
             .padding(top = 20.dp),
-        horizontalArrangement = Arrangement.SpaceEvenly,
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        CounterCard("Total Folds", counter)
-        CounterCard("Today Folds", dailyFolds)
+        // First Row: Total Folds and Today Folds
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp),
+            horizontalArrangement = Arrangement.SpaceEvenly
+        ) {
+            CounterCard("Total Folds", counter)
+            CounterCard("Today Folds", dailyFolds)
+        }
 
+        // Second Row: Average Folds and Hinge Angle
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 16.dp),
+            horizontalArrangement = Arrangement.SpaceEvenly
+        ) {
+            CounterCard("Avg. Weekly Folds", String.format("%.2f", averageFolds))
+            CounterCard("Hinge Angle", String.format("%.2f", hingeAngle) + "°")
+        }
     }
-    Column {
-        CounterCard(label = "Average Folds", count = String.format("%.2f", averageFolds))
-    }
-
 }
 
 @Composable
 fun CounterCard(label: String, count: Any) {
+    // Fixed size for all cards
+    val cardWidth = 150.dp
+    val cardHeight = 120.dp
+
     AnimatedContent(
         targetState = count,
         transitionSpec = {
@@ -130,29 +150,37 @@ fun CounterCard(label: String, count: Any) {
     ) { targetCount ->
         Card(
             modifier = Modifier
-                .padding(16.dp),
-            colors = CardDefaults.cardColors(MaterialTheme.colorScheme.outlineVariant),
-            shape = RoundedCornerShape(20.dp),
-            elevation = CardDefaults.cardElevation(12.dp)
+                .width(cardWidth)
+                .height(cardHeight)
+                .padding(8.dp),
+            colors = CardDefaults.cardColors(MaterialTheme.colorScheme.surfaceVariant),
+            shape = RoundedCornerShape(16.dp),
+            elevation = CardDefaults.cardElevation(8.dp)
         ) {
             Column(
-                modifier = Modifier.padding(16.dp),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(12.dp),
+                verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
                     text = label,
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold
+                    style = MaterialTheme.typography.bodySmall,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    textAlign = TextAlign.Center
                 )
+                Spacer(modifier = Modifier.height(8.dp))
                 Text(
                     text = "$targetCount",
-                    style = MaterialTheme.typography.displayMedium,
+                    style = MaterialTheme.typography.displaySmall,
                     fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.animateContentSize(
                         animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy)
                     )
                 )
-
             }
         }
     }
@@ -229,7 +257,7 @@ fun ActionButtons(
             colors = ButtonDefaults.buttonColors(MaterialTheme.colorScheme.error)
         ) {
             Icon(imageVector = Icons.Filled.Refresh, contentDescription = "Reset")
-            Spacer(modifier = Modifier.padding(4.dp) )
+            Spacer(modifier = Modifier.padding(4.dp))
             Text("Reset Counter")
         }
 
@@ -244,7 +272,7 @@ fun ActionButtons(
             }
         ) {
             Icon(imageVector = Icons.Filled.Share, contentDescription = "Share")
-            Spacer(modifier = Modifier.padding(4.dp) )
+            Spacer(modifier = Modifier.padding(4.dp))
             Text("Share")
         }
     }

@@ -16,7 +16,6 @@ import java.time.LocalDate
 import javax.inject.Inject
 
 @RequiresApi(Build.VERSION_CODES.O)
-
 @HiltViewModel
 class CounterViewModel @Inject constructor(
     private val repository: CounterRepository
@@ -44,42 +43,39 @@ class CounterViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-
             repository.initializeDefaultValues()
-
-            val storedCounter = repository.getCounter()
-            Log.d("CounterViewModel", "Stored total counter: $storedCounter")
-            _counter.value = storedCounter
-
-
-            val lastSavedDate = repository.getLastUpdatedDate()
-            Log.d("CounterViewModel", "Last updated date: '$lastSavedDate', Today: '$today'")
-
-            if (lastSavedDate.isEmpty() || lastSavedDate != today) {
-
-                _dailyFolds.value = 0
-                repository.updateDailyCount(today, 0)
-                repository.updateLastUpdatedDate(today)
-            } else {
-                _dailyFolds.value = repository.getDailyCount(today)
-            }
-
-            repository.dataStore.data.collect {
-                _hingeAngle.value = repository.getHingeAngle()
-            }
-
+            loadStoredData()
+            observeHingeAngle()
             calculateAverageFolds()
             updateAchievementsAndProgress(_counter.value)
         }
     }
 
+    private suspend fun loadStoredData() {
+        _counter.value = repository.getCounter()
+
+        val lastSavedDate = repository.getLastUpdatedDate()
+        Log.d("CounterViewModel", "Last updated date: '$lastSavedDate', Today: '$today'")
+
+        _dailyFolds.value = if (lastSavedDate == today) {
+            repository.getDailyCount(today)
+        } else {
+            repository.updateDailyCount(today, 0)
+            repository.updateLastUpdatedDate(today)
+            0
+        }
+    }
+
+    private suspend fun observeHingeAngle() {
+        repository.dataStore.data.collect {
+            _hingeAngle.value = repository.getHingeAngle()
+        }
+    }
+
     fun incrementCounter(context: Context) {
         viewModelScope.launch {
-            val currentCounter = repository.getCounter()
-            val currentDailyCount = repository.getDailyCount(today)
-
-            val newCounter = currentCounter + 1
-            val newDailyCount = currentDailyCount + 1
+            val newCounter = _counter.value + 1
+            val newDailyCount = _dailyFolds.value + 1
 
             _counter.value = newCounter
             _dailyFolds.value = newDailyCount
@@ -88,9 +84,7 @@ class CounterViewModel @Inject constructor(
             repository.updateDailyCount(today, newDailyCount)
 
             calculateAverageFolds()
-
             updateAchievementsAndProgress(newCounter)
-
             FoldCountWidget.updateWidget(context)
         }
     }
@@ -99,7 +93,7 @@ class CounterViewModel @Inject constructor(
         viewModelScope.launch {
             _counter.value = 0
             _dailyFolds.value = 0
-            _averageFolds.value=0.0
+            _averageFolds.value = 0.0
 
             repository.updateCounter(0)
             repository.updateDailyCount(today, 0)
@@ -111,47 +105,17 @@ class CounterViewModel @Inject constructor(
     }
 
     private fun updateAchievementsAndProgress(count: Int) {
-        val newAchievements = mutableListOf<String>()
         val milestones = listOf(10, 50, 100, 500)
-
-        milestones.forEach { milestone ->
-            if (count >= milestone) {
-                newAchievements.add("Unlocked $milestone folds!")
-            }
-        }
-        _achievements.value = newAchievements
+        _achievements.value = milestones.filter { count >= it }.map { "Unlocked $it folds!" }
 
         val nextMilestone = milestones.firstOrNull { it > count } ?: milestones.last()
-        _progressToNextAchievement.value = if (count < nextMilestone) {
-            count.toFloat() / nextMilestone
-        } else {
-            1f
-        }
+        _progressToNextAchievement.value = count.toFloat() / nextMilestone
     }
-
 
     fun initializeData(context: Context) {
         viewModelScope.launch {
-            val lastSavedDate = repository.getLastUpdatedDate()
-            Log.d(
-                "CounterViewModel",
-                "initializeData: Last updated date: '$lastSavedDate', Today: '$today'"
-            )
-
-            val storedCounter = repository.getCounter()
-            val storedDailyCount = if (lastSavedDate == today) {
-                repository.getDailyCount(today)
-            } else {
-                repository.updateDailyCount(today, 0)
-                0
-            }
-
-            _counter.value = storedCounter
-            _dailyFolds.value = storedDailyCount
-            repository.updateLastUpdatedDate(today)
-
+            loadStoredData()
             calculateAverageFolds()
-
             updateAchievementsAndProgress(_counter.value)
             FoldCountWidget.updateWidget(context)
         }
@@ -159,8 +123,9 @@ class CounterViewModel @Inject constructor(
 
     private suspend fun calculateAverageFolds() {
         val dailyCounts = repository.getDailyFoldCounts(7)
-        _averageFolds.value = if (dailyCounts.isNotEmpty()) dailyCounts.average() else 0.0
+        _averageFolds.value = dailyCounts.averageOrNull() ?: 0.0
     }
 
+    private fun List<Int>.averageOrNull(): Double? =
+        if (isNotEmpty()) average() else null
 }
-

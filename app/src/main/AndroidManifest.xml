@@ -31,6 +31,7 @@
         <receiver
             android:name=".widget.FoldCountWidgetReceiver"
             android:exported="false"
+            android:enabled="true"
             android:permission="android.permission.BIND_APPWIDGET">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />

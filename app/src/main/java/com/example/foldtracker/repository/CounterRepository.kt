@@ -84,6 +84,16 @@ class CounterRepository @Inject constructor(
         }
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
+    suspend fun getAllDailyFoldCounts(): List<Int> {
+        val preferences = dataStore.data.first()
+
+        return preferences.asMap().entries
+            .filter { it.key.name.startsWith("daily_count_") }
+            .mapNotNull { it.value as? Int }
+    }
+
+
     suspend fun updateHingeAngle(angle: Float) {
         dataStore.edit { preferences ->
             preferences[HINGE_ANGLE_KEY] = angle

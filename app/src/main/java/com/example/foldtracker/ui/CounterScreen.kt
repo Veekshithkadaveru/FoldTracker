@@ -66,6 +66,7 @@ fun CounterScreen(viewModel: CounterViewModel) {
     val achievements by viewModel.achievements.collectAsState()
     var showDialog by remember { mutableStateOf(false) }
     val averageFolds by viewModel.averageFolds.collectAsState()
+    val yearlyProjection by viewModel.yearlyProjection.collectAsState()
     val hingeAngle by viewModel.hingeAngle.collectAsState()
 
     val nextMilestone = if (counter == 0) 50 else ((counter / 50) + 1) * 50
@@ -82,7 +83,7 @@ fun CounterScreen(viewModel: CounterViewModel) {
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            CounterStats(counter, dailyFolds, averageFolds, hingeAngle)
+            CounterStats(counter, dailyFolds, averageFolds, hingeAngle, yearlyProjection)
             ProgressBar(progress)
             AchievementSection(achievements)
             ActionButtons(counter, viewModel, context) { showDialog = true }
@@ -102,7 +103,13 @@ fun gradientBackground(): Brush = Brush.verticalGradient(
 )
 
 @Composable
-fun CounterStats(counter: Int, dailyFolds: Int, averageFolds: Double, hingeAngle: Float) {
+fun CounterStats(
+    counter: Int,
+    dailyFolds: Int,
+    averageFolds: Double,
+    hingeAngle: Float,
+    yearlyProjection: Int
+) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -129,6 +136,7 @@ fun CounterStats(counter: Int, dailyFolds: Int, averageFolds: Double, hingeAngle
         ) {
             CounterCard("Avg. Weekly Folds", String.format("%.2f", averageFolds))
             CounterCard("Hinge Angle", String.format("%.2f", hingeAngle) + "°")
+            CounterCard("Yearly Projection", String.format("%.2f", yearlyProjection.toDouble()))
         }
     }
 }

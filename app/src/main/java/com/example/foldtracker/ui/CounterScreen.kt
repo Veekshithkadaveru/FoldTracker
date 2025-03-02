@@ -107,7 +107,7 @@ fun CounterStats(
     counter: Int,
     dailyFolds: Int,
     averageFolds: Double,
-    hingeAngle: Float,
+    hingeAngle: Int,
     yearlyProjection: Int
 ) {
     Column(
@@ -135,8 +135,8 @@ fun CounterStats(
             horizontalArrangement = Arrangement.SpaceEvenly
         ) {
             CounterCard("Avg. Weekly Folds", String.format("%.2f", averageFolds))
-            CounterCard("Hinge Angle", String.format("%.2f", hingeAngle) + "°")
-            CounterCard("Yearly Projection", String.format("%.2f", yearlyProjection.toDouble()))
+            CounterCard("Hinge Angle", String.format("%d", hingeAngle) + "°")
+            CounterCard("Yearly Projection", String.format("%d", yearlyProjection))
         }
     }
 }

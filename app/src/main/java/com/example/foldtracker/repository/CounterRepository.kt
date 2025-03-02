@@ -94,13 +94,13 @@ class CounterRepository @Inject constructor(
     }
 
 
-    suspend fun updateHingeAngle(angle: Float) {
+    suspend fun updateHingeAngle(angle: Int) {
         dataStore.edit { preferences ->
             preferences[HINGE_ANGLE_KEY] = angle
         }
     }
-    suspend fun getHingeAngle(): Float {
-        return dataStore.data.map { it[HINGE_ANGLE_KEY] ?: 0f }.first()
+    suspend fun getHingeAngle(): Int {
+        return dataStore.data.map { it[HINGE_ANGLE_KEY]?:0 }.first()
     }
 
     @RequiresApi(Build.VERSION_CODES.O)

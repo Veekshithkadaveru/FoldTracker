@@ -36,8 +36,8 @@ class CounterViewModel @Inject constructor(
     private val _averageFolds = MutableStateFlow(0.0)
     val averageFolds: StateFlow<Double> = _averageFolds
 
-    private val _hingeAngle = MutableStateFlow(0f)
-    val hingeAngle: StateFlow<Float> = _hingeAngle
+    private val _hingeAngle = MutableStateFlow(0)
+    val hingeAngle: StateFlow<Int> = _hingeAngle
 
     private val _yearlyProjection = MutableStateFlow(0)
     val yearlyProjection: StateFlow<Int> = _yearlyProjection

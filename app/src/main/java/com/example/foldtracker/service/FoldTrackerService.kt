@@ -68,14 +68,14 @@ class FoldTrackerService : Service(), SensorEventListener {
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onSensorChanged(event: SensorEvent?) {
         if (event?.sensor?.type == Sensor.TYPE_HINGE_ANGLE) {
-            val angle = event.values[0]
+            val angle = event.values[0].toInt()
             Log.d("FoldTrackerService", "Hinge angle: $angle")
 
             serviceScope.launch {
                 repository.updateHingeAngle(angle)
             }
 
-            if (angle < 10f) {
+            if (angle < 10) {
                 serviceScope.launch { updateCounts() }
             }
         }

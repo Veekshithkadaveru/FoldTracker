@@ -10,5 +10,5 @@ object DataStoreKeys {
     fun dailyCountKey(date: String) = intPreferencesKey("daily_count_$date")
     val LAST_UPDATED_DATE_KEY = stringPreferencesKey("last_updated_date_key")
     val FIRST_LAUNCH_KEY = booleanPreferencesKey("first_launch_key")
-    val HINGE_ANGLE_KEY = floatPreferencesKey("hinge_angle_key")
+    val HINGE_ANGLE_KEY = intPreferencesKey("hinge_angle_key")
 }

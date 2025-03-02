@@ -39,6 +39,10 @@ class CounterViewModel @Inject constructor(
     private val _hingeAngle = MutableStateFlow(0f)
     val hingeAngle: StateFlow<Float> = _hingeAngle
 
+    private val _yearlyProjection = MutableStateFlow(0)
+    val yearlyProjection: StateFlow<Int> = _yearlyProjection
+
+
     private val today: String = LocalDate.now().toString()
 
     init {
@@ -47,6 +51,7 @@ class CounterViewModel @Inject constructor(
             loadStoredData()
             observeHingeAngle()
             calculateAverageFolds()
+            calculateYearlyProjection()
             updateAchievementsAndProgress(_counter.value)
         }
     }
@@ -84,6 +89,7 @@ class CounterViewModel @Inject constructor(
             repository.updateDailyCount(today, newDailyCount)
 
             calculateAverageFolds()
+            calculateYearlyProjection()
             updateAchievementsAndProgress(newCounter)
             FoldCountWidget.updateWidget(context)
         }
@@ -98,8 +104,9 @@ class CounterViewModel @Inject constructor(
             repository.updateCounter(0)
             repository.updateDailyCount(today, 0)
             repository.clearDailyFoldCounts()
-
+            repository.clearDailyFoldCounts()
             updateAchievementsAndProgress(0)
+            calculateYearlyProjection()
             FoldCountWidget.updateWidget(context)
         }
     }
@@ -125,6 +132,17 @@ class CounterViewModel @Inject constructor(
         val dailyCounts = repository.getDailyFoldCounts(7)
         _averageFolds.value = dailyCounts.averageOrNull() ?: 0.0
     }
+
+    fun calculateYearlyProjection() {
+        viewModelScope.launch {
+            val allDailyCounts = repository.getAllDailyFoldCounts()
+            val averageFoldsPerDay = allDailyCounts.averageOrNull() ?: 0.0
+            val projectedYearlyFolds = (averageFoldsPerDay * 365).toInt()
+
+            _yearlyProjection.value = projectedYearlyFolds
+        }
+    }
+
 
     private fun List<Int>.averageOrNull(): Double? =
         if (isNotEmpty()) average() else null

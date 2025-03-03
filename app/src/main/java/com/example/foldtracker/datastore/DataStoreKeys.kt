@@ -11,4 +11,5 @@ object DataStoreKeys {
     val LAST_UPDATED_DATE_KEY = stringPreferencesKey("last_updated_date_key")
     val FIRST_LAUNCH_KEY = booleanPreferencesKey("first_launch_key")
     val HINGE_ANGLE_KEY = intPreferencesKey("hinge_angle_key")
+    val DAILY_LIMIT_KEY = intPreferencesKey("daily_limit_key")
 }

@@ -41,7 +41,8 @@ class CounterRepository @Inject constructor(
 
     @RequiresApi(Build.VERSION_CODES.O)
     suspend fun getLastUpdatedDate(): String {
-        return dataStore.data.map { it[DataStoreKeys.LAST_UPDATED_DATE_KEY] ?: getTodayDate() }.first()
+        return dataStore.data.map { it[DataStoreKeys.LAST_UPDATED_DATE_KEY] ?: getTodayDate() }
+            .first()
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
@@ -99,8 +100,20 @@ class CounterRepository @Inject constructor(
             preferences[HINGE_ANGLE_KEY] = angle
         }
     }
+
     suspend fun getHingeAngle(): Int {
-        return dataStore.data.map { it[HINGE_ANGLE_KEY]?:0 }.first()
+        return dataStore.data.map { it[HINGE_ANGLE_KEY] ?: 0 }.first()
+    }
+
+    suspend fun setDailyLimit(limit: Int) {
+        dataStore.edit { preferences ->
+            preferences[DataStoreKeys.DAILY_LIMIT_KEY] = limit
+        }
+    }
+
+    suspend fun getDailyLimit(): Int {
+        val preferences = dataStore.data.first()
+        return preferences[DataStoreKeys.DAILY_LIMIT_KEY] ?: 50
     }
 
     @RequiresApi(Build.VERSION_CODES.O)

@@ -17,6 +17,7 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -51,6 +52,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -83,7 +85,7 @@ fun CounterScreen(viewModel: CounterViewModel) {
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            CounterStats(counter, dailyFolds, averageFolds, hingeAngle, yearlyProjection)
+            CounterStats(counter, dailyFolds, averageFolds, hingeAngle, yearlyProjection, viewModel)
             ProgressBar(progress)
             AchievementSection(achievements)
             ActionButtons(counter, viewModel, context) { showDialog = true }
@@ -102,21 +104,34 @@ fun gradientBackground(): Brush = Brush.verticalGradient(
     )
 )
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun CounterStats(
     counter: Int,
     dailyFolds: Int,
     averageFolds: Double,
     hingeAngle: Int,
-    yearlyProjection: Int
+    yearlyProjection: Int,
+    viewModel: CounterViewModel
 ) {
+
+    var isDailyLimitCardExpanded by remember { mutableStateOf(false) }
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(top = 20.dp),
+            .padding(top = 20.dp)
+            .pointerInput(Unit) {
+                detectTapGestures { offset ->
+
+                    if (isDailyLimitCardExpanded) {
+                        isDailyLimitCardExpanded = false;
+                    }
+                }
+            },
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // First Row: Total Folds and Today Folds
+
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -125,9 +140,11 @@ fun CounterStats(
         ) {
             CounterCard("Total Folds", counter)
             CounterCard("Today Folds", dailyFolds)
+            DailyLimitCard(viewModel = viewModel, isExpanded = isDailyLimitCardExpanded,
+                onExpandChange = { isDailyLimitCardExpanded = it })
         }
 
-        // Second Row: Average Folds and Hinge Angle
+
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -283,6 +300,7 @@ fun ActionButtons(
             Spacer(modifier = Modifier.padding(4.dp))
             Text("Share")
         }
+
     }
 }
 

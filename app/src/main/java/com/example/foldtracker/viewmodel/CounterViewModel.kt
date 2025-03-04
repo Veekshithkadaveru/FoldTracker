@@ -105,7 +105,7 @@ class CounterViewModel @Inject constructor(
             repository.updateDailyCount(today, newDailyCount)
 
             if (newDailyCount >= _dailyLimit.value) {
-                sendDailyLimitNotification(context,_dailyLimit.value)
+                sendDailyLimitNotification(context, _dailyLimit.value)
             }
 
 
@@ -174,7 +174,7 @@ class CounterViewModel @Inject constructor(
     private fun sendDailyLimitNotification(context: Context, dailyLimit: Int) {
         val todayDate = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
 
-        val preferencesManager = FoldPreferencesManager(context) // Create an instance
+        val preferencesManager = FoldPreferencesManager(context)
 
         CoroutineScope(Dispatchers.IO).launch {
             preferencesManager.getLastNotifiedDate().collect { lastNotifiedDate ->
@@ -214,7 +214,6 @@ class CounterViewModel @Inject constructor(
             }
         }
     }
-
 
 
     private fun List<Int>.averageOrNull(): Double? =

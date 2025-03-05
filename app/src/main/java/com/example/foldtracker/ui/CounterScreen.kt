@@ -57,19 +57,20 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import com.example.foldtracker.viewmodel.CounterViewModel
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun CounterScreen(viewModel: CounterViewModel) {
+fun CounterScreen(viewModel: CounterViewModel,navController: NavController) {
     val context = LocalContext.current
     val counter by viewModel.counter.collectAsState()
     val dailyFolds by viewModel.dailyFolds.collectAsState()
     val achievements by viewModel.achievements.collectAsState()
     var showDialog by remember { mutableStateOf(false) }
-    val averageFolds by viewModel.averageFolds.collectAsState()
-    val yearlyProjection by viewModel.yearlyProjection.collectAsState()
-    val hingeAngle by viewModel.hingeAngle.collectAsState()
+
+
 
     val nextMilestone = if (counter == 0) 50 else ((counter / 50) + 1) * 50
     val progress = if (counter == 0) 0f else counter / nextMilestone.toFloat()
@@ -85,10 +86,10 @@ fun CounterScreen(viewModel: CounterViewModel) {
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            CounterStats(counter, dailyFolds, averageFolds, hingeAngle, yearlyProjection, viewModel)
+            CounterStats(counter, dailyFolds,navController)
             ProgressBar(progress)
             AchievementSection(achievements)
-            ActionButtons(counter, viewModel, context) { showDialog = true }
+            ActionButtons(counter, context) { showDialog = true }
         }
     }
     if (showDialog) ResetConfirmationDialog(onConfirm = {
@@ -109,13 +110,12 @@ fun gradientBackground(): Brush = Brush.verticalGradient(
 fun CounterStats(
     counter: Int,
     dailyFolds: Int,
-    averageFolds: Double,
-    hingeAngle: Int,
-    yearlyProjection: Int,
-    viewModel: CounterViewModel
+    navController: NavController
 ) {
 
     var isDailyLimitCardExpanded by remember { mutableStateOf(false) }
+
+
 
     Column(
         modifier = Modifier
@@ -125,7 +125,7 @@ fun CounterStats(
                 detectTapGestures { offset ->
 
                     if (isDailyLimitCardExpanded) {
-                        isDailyLimitCardExpanded = false;
+                        isDailyLimitCardExpanded = false
                     }
                 }
             },
@@ -140,20 +140,10 @@ fun CounterStats(
         ) {
             CounterCard("Total Folds", counter)
             CounterCard("Today Folds", dailyFolds)
-            DailyLimitCard(viewModel = viewModel, isExpanded = isDailyLimitCardExpanded,
-                onExpandChange = { isDailyLimitCardExpanded = it })
         }
 
-
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 16.dp),
-            horizontalArrangement = Arrangement.SpaceEvenly
-        ) {
-            CounterCard("Avg. Weekly Folds", String.format("%.2f", averageFolds))
-            CounterCard("Hinge Angle", String.format("%d", hingeAngle) + "°")
-            CounterCard("Yearly Projection", String.format("%d", yearlyProjection))
+        Button(onClick = { navController.navigate("stats_screen") }) {
+            Text(text = "More Stats")
         }
     }
 }
@@ -267,7 +257,6 @@ fun AchievementSection(achievements: List<String>) {
 @Composable
 fun ActionButtons(
     counter: Int,
-    viewModel: CounterViewModel,
     context: Context,
     onResetClick: () -> Unit
 ) {

@@ -1,6 +1,7 @@
 package com.example.foldtracker.ui
 
 import android.os.Build
+import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.clickable
@@ -24,6 +25,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -40,6 +42,10 @@ fun DailyLimitCard(
     val dailyLimit by viewModel.dailyLimit.collectAsState()
 
     var sliderValue by remember { mutableStateOf(dailyLimit.toFloat()) }
+
+    val context= LocalContext.current
+
+    val message="Daily Limit is set to ${sliderValue.toInt()}"
 
     val cardWidth = if (isExpanded) 300.dp else 150.dp
     val cardHeight = if (isExpanded) 240.dp else 120.dp
@@ -85,6 +91,7 @@ fun DailyLimitCard(
                 Button(onClick = {
                     viewModel.updateDailyLimit(sliderValue.toInt())
                     onExpandChange(false)
+                    Toast.makeText(context,message,Toast.LENGTH_LONG).show()
                 }) {
                     Text("Set Limit")
                 }

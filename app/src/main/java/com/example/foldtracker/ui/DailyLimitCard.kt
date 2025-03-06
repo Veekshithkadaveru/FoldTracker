@@ -29,7 +29,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.example.foldtracker.viewmodel.CounterViewModel
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -43,9 +42,9 @@ fun DailyLimitCard(
 
     var sliderValue by remember { mutableStateOf(dailyLimit.toFloat()) }
 
-    val context= LocalContext.current
+    val context = LocalContext.current
 
-    val message="Daily Limit is set to ${sliderValue.toInt()}"
+    val message = "Daily Limit is set to ${sliderValue.toInt()}"
 
     val cardWidth = if (isExpanded) 300.dp else 150.dp
     val cardHeight = if (isExpanded) 240.dp else 120.dp
@@ -73,10 +72,12 @@ fun DailyLimitCard(
                 textAlign = TextAlign.Center
             )
 
-            Text(text = "${sliderValue.toInt()}",
+            Text(
+                text = if (isExpanded) "${sliderValue.toInt()}" else "$dailyLimit",
                 style = MaterialTheme.typography.displaySmall,
                 fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.primary,)
+                color = MaterialTheme.colorScheme.primary,
+            )
 
             if (isExpanded) {
 
@@ -91,7 +92,7 @@ fun DailyLimitCard(
                 Button(onClick = {
                     viewModel.updateDailyLimit(sliderValue.toInt())
                     onExpandChange(false)
-                    Toast.makeText(context,message,Toast.LENGTH_LONG).show()
+                    Toast.makeText(context, message, Toast.LENGTH_LONG).show()
                 }) {
                     Text("Set Limit")
                 }

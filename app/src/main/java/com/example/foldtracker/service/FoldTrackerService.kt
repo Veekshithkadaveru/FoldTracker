@@ -75,7 +75,7 @@ class FoldTrackerService : Service(), SensorEventListener {
                 repository.updateHingeAngle(angle)
             }
 
-            if (angle < 10) {
+            if (angle > 170) {
                 serviceScope.launch { updateCounts() }
             }
         }
@@ -141,15 +141,4 @@ class FoldTrackerService : Service(), SensorEventListener {
 
     override fun onBind(intent: Intent?): IBinder? = null
 
-    companion object {
-
-        fun startService(context: Context) {
-            val intent = Intent(context, FoldTrackerService::class.java)
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                context.startForegroundService(intent)
-            } else {
-                context.startService(intent)
-            }
-        }
-    }
 }

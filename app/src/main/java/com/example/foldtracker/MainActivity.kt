@@ -30,54 +30,13 @@ class MainActivity : ComponentActivity() {
         setContent {
             val viewModel: CounterViewModel = hiltViewModel()
 
-
             val context = LocalContext.current
             viewModel.initializeData(context)
             AppNavigation(viewModel = viewModel)
-            TrackFoldingEvents(viewModel = viewModel)
         }
     }
 
-    @Composable
-    @RequiresApi(Build.VERSION_CODES.O)
-    private fun TrackFoldingEvents(viewModel: CounterViewModel) {
-        val context = LocalContext.current
-        val windowInfoTracker = WindowInfoTracker.getOrCreate(LocalContext.current)
-        val activity = LocalContext.current as Activity
 
-        LaunchedEffect(activity) {
-            val layoutInfoFlow = windowInfoTracker.windowLayoutInfo(activity)
-
-            layoutInfoFlow.collect { layoutInfo ->
-                // Log all display features for debugging
-                layoutInfo.displayFeatures.forEach { feature ->
-                    Log.d("FoldTracker", "Feature: $feature")
-                    if (feature is FoldingFeature) {
-                        Log.d(
-                            "FoldTracker",
-                            "State: ${feature.state}, Orientation: ${feature.orientation}, Bounds: ${feature.bounds}"
-                        )
-                    }
-                }
-
-
-                val isFolded = layoutInfo.displayFeatures.any { feature ->
-                    feature is FoldingFeature && (
-                            feature.state == FoldingFeature.State.HALF_OPENED ||  // Common folded state
-                                    (Build.MANUFACTURER.equals("Google", ignoreCase = true) &&
-                                            feature.state == FoldingFeature.State.FLAT) // Pixel Fold adjustment
-                            )
-                }
-
-                if (isFolded) {
-                    Log.d("FoldTracker", "Device is folded!")
-                    viewModel.incrementCounter(context)
-                } else {
-                    Log.d("FoldTracker", "Device is NOT folded.")
-                }
-            }
-        }
-    }
 
     @RequiresApi(Build.VERSION_CODES.O)
     private fun startFoldTrackingService() {

@@ -8,7 +8,9 @@ import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.SizeTransform
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
@@ -21,6 +23,7 @@ import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -30,6 +33,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.AlertDialog
@@ -37,6 +41,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
@@ -58,18 +63,16 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
 import com.example.foldtracker.viewmodel.CounterViewModel
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun CounterScreen(viewModel: CounterViewModel,navController: NavController) {
+fun CounterScreen(viewModel: CounterViewModel, navController: NavController) {
     val context = LocalContext.current
     val counter by viewModel.counter.collectAsState()
     val dailyFolds by viewModel.dailyFolds.collectAsState()
     val achievements by viewModel.achievements.collectAsState()
     var showDialog by remember { mutableStateOf(false) }
-
 
 
     val nextMilestone = if (counter == 0) 50 else ((counter / 50) + 1) * 50
@@ -86,7 +89,7 @@ fun CounterScreen(viewModel: CounterViewModel,navController: NavController) {
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            CounterStats(counter, dailyFolds,navController)
+            CounterStats(counter, dailyFolds, navController)
             ProgressBar(progress)
             AchievementSection(achievements)
             ActionButtons(counter, context) { showDialog = true }
@@ -141,10 +144,7 @@ fun CounterStats(
             CounterCard("Total Folds", counter)
             CounterCard("Today Folds", dailyFolds)
         }
-
-        Button(onClick = { navController.navigate("stats_screen") }) {
-            Text(text = "More Stats")
-        }
+        MoreStatsButton(navController = navController)
     }
 }
 
@@ -310,4 +310,54 @@ fun ResetConfirmationDialog(onConfirm: () -> Unit, onDismiss: () -> Unit) {
             }
         }
     )
+}
+
+
+@Composable
+fun MoreStatsButton(navController: NavController, modifier: Modifier = Modifier) {
+    var buttonScale by remember { mutableStateOf(1f) }
+    val animatedScale by animateFloatAsState(
+        targetValue = buttonScale,
+        animationSpec = tween(durationMillis = 100)
+    )
+
+    ElevatedButton(
+        onClick = { navController.navigate("stats_screen") },
+        modifier = modifier,
+        shape = MaterialTheme.shapes.medium,
+        colors = ButtonDefaults.buttonColors(
+            containerColor = Color.Transparent,
+            contentColor = MaterialTheme.colorScheme.onSurface,
+        ),
+        contentPadding = PaddingValues()
+    ) {
+        Box(
+            modifier = Modifier
+                .background(
+                    brush = Brush.horizontalGradient(
+                        colors = listOf(
+                            MaterialTheme.colorScheme.primary,
+                            MaterialTheme.colorScheme.tertiary,
+                        )
+                    ),
+                    shape = MaterialTheme.shapes.medium
+                )
+                .padding(horizontal = 16.dp, vertical = 8.dp)
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.BarChart,
+                    contentDescription = "Stats",
+                    modifier = Modifier.padding(end = 8.dp),
+                    tint = MaterialTheme.colorScheme.onSecondary
+                )
+                Text(
+                    text = "More Stats",
+                    color = MaterialTheme.colorScheme.onSecondary
+                )
+            }
+        }
+    }
 }

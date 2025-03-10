@@ -40,6 +40,7 @@ class FoldTrackerService : Service(), SensorEventListener {
     private var hingeSensor: Sensor? = null
 
     private val serviceScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
+    private var wasDeviceClosed = true
 
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate() {
@@ -49,16 +50,13 @@ class FoldTrackerService : Service(), SensorEventListener {
         sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
         hingeSensor = sensorManager.getDefaultSensor(Sensor.TYPE_HINGE_ANGLE)
 
-
         startForeground(1, createNotification())
 
         if (hingeSensor != null) {
-
             sensorManager.registerListener(this, hingeSensor, SensorManager.SENSOR_DELAY_NORMAL)
             Log.d("FoldTrackerService", "Hinge sensor registered.")
         } else {
             Log.d("FoldTrackerService", "Hinge sensor not available; using fallback simulation.")
-
             serviceScope.launch {
                 trackFoldEventsSimulated()
             }
@@ -71,18 +69,25 @@ class FoldTrackerService : Service(), SensorEventListener {
             val angle = event.values[0].toInt()
             Log.d("FoldTrackerService", "Hinge angle: $angle")
 
+
             serviceScope.launch {
                 repository.updateHingeAngle(angle)
             }
 
-            if (angle > 170) {
-                serviceScope.launch { updateCounts() }
+
+            if (angle in 90..180) {
+                if (wasDeviceClosed) {
+                    serviceScope.launch { updateCounts() }
+                    wasDeviceClosed = false
+                }
+            } else if (angle <= 10) {
+                wasDeviceClosed = true
             }
         }
     }
 
     override fun onAccuracyChanged(p0: Sensor?, p1: Int) {
-        //("Not yet implemented")
+        // Not used
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
@@ -106,11 +111,14 @@ class FoldTrackerService : Service(), SensorEventListener {
 
     @RequiresApi(Build.VERSION_CODES.O)
     private suspend fun trackFoldEventsSimulated() {
-        while (currentCoroutineContext().isActive) { 
+        while (currentCoroutineContext().isActive) {
             delay(5000)
 
-            val simulatedFold = (System.currentTimeMillis() / 10000) % 2L == 0L
-            if (simulatedFold) {
+
+            val simulatedAngle = (0..180).random()
+
+
+            if (simulatedAngle in 90..180) {
                 updateCounts()
             }
         }
@@ -121,8 +129,7 @@ class FoldTrackerService : Service(), SensorEventListener {
         val channelId = "fold_tracker_service_channel"
         val channelName = "Fold Tracker Service"
         val manager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        val channel =
-            NotificationChannel(channelId, channelName, NotificationManager.IMPORTANCE_LOW)
+        val channel = NotificationChannel(channelId, channelName, NotificationManager.IMPORTANCE_LOW)
         manager.createNotificationChannel(channel)
 
         return NotificationCompat.Builder(this, channelId)
@@ -140,5 +147,4 @@ class FoldTrackerService : Service(), SensorEventListener {
     }
 
     override fun onBind(intent: Intent?): IBinder? = null
-
 }

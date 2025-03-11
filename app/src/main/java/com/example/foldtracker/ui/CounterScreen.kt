@@ -7,6 +7,7 @@ import androidx.annotation.RequiresApi
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.SizeTransform
 import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
@@ -55,6 +56,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
@@ -204,14 +206,36 @@ fun CounterCard(label: String, count: Any) {
 
 @Composable
 fun ProgressBar(progress: Float) {
-    LinearProgressIndicator(
-        progress = progress.coerceIn(0f, 1f),
+    val animatedProgress by animateFloatAsState(
+        targetValue = progress.coerceIn(0f, 1f),
+        animationSpec = tween(durationMillis = 1000, easing = FastOutSlowInEasing)
+    )
+
+    Box(
         modifier = Modifier
             .fillMaxWidth(0.8f)
-            .padding(top = 16.dp),
-        color = MaterialTheme.colorScheme.primary
-    )
+            .height(12.dp)
+            .clip(RoundedCornerShape(50))
+            .background(Color.Gray.copy(alpha = 0.3f))
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth(animatedProgress)
+                .height(12.dp)
+                .clip(RoundedCornerShape(50))
+                .background(
+                    brush = Brush.horizontalGradient(
+                        colors = listOf(
+                            MaterialTheme.colorScheme.inversePrimary,
+                            MaterialTheme.colorScheme.error
+                        )
+                    )
+                )
+                .animateContentSize()
+        )
+    }
 }
+
 
 @Composable
 fun AchievementSection(achievements: List<String>) {

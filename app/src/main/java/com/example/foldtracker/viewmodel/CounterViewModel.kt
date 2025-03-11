@@ -65,6 +65,7 @@ class CounterViewModel @Inject constructor(
 
     private fun refreshData() {
         viewModelScope.launch {
+            repository.initializeDefaultValues()
             loadStoredData()
             calculateAverageFolds()
             calculateYearlyProjection()

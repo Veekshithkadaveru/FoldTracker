@@ -15,11 +15,9 @@ import com.example.foldtracker.datastore.DataStoreKeys
 import com.example.foldtracker.datastore.DataStoreKeys.COUNTER_KEY
 import com.example.foldtracker.datastore.DataStoreKeys.HINGE_ANGLE_KEY
 import com.example.foldtracker.datastore.FoldPreferencesManager
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
 import java.time.LocalDate
@@ -34,19 +32,16 @@ class CounterRepository @Inject constructor(
     private val context: Context
 ) {
 
-    suspend fun getCounter(): Int {
-        return dataStore.data.map { it[COUNTER_KEY] ?: 0 }.first()
-    }
+    suspend fun getCounter(): Int = dataStore.data.map { it[COUNTER_KEY] ?: 0 }.first()
 
     suspend fun updateCounter(newValue: Int) {
-        dataStore.edit { preferences ->
-            preferences[COUNTER_KEY] = newValue
-        }
+        dataStore.edit { preferences -> preferences[COUNTER_KEY] = newValue }
     }
 
-    suspend fun getDailyCount(date: String): Int {
-        return dataStore.data.map { it[DataStoreKeys.dailyCountKey(date)] ?: 0 }.first()
-    }
+    suspend fun getDailyCount(date: String): Int =
+        dataStore.data.map {
+            it[DataStoreKeys.dailyCountKey(date)] ?: 0
+        }.first()
 
     suspend fun updateDailyCount(date: String, newValue: Int) {
         dataStore.edit { preferences ->
@@ -55,18 +50,16 @@ class CounterRepository @Inject constructor(
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
-    suspend fun getLastUpdatedDate(): String {
-        return dataStore.data.map { it[DataStoreKeys.LAST_UPDATED_DATE_KEY] ?: getTodayDate() }
-            .first()
-    }
+    suspend fun getLastUpdatedDate(): String =
+        dataStore.data.map {
+            it[DataStoreKeys.LAST_UPDATED_DATE_KEY] ?: getTodayDate()
+        }.first()
 
     @RequiresApi(Build.VERSION_CODES.O)
     suspend fun initializeDefaultValues() {
         dataStore.edit { preferences ->
-
             val isFirstLaunch = preferences[DataStoreKeys.FIRST_LAUNCH_KEY] ?: true
             if (isFirstLaunch) {
-
                 preferences[COUNTER_KEY] = 0
                 preferences[DataStoreKeys.LAST_UPDATED_DATE_KEY] = getTodayDate()
                 preferences[DataStoreKeys.FIRST_LAUNCH_KEY] = false
@@ -103,12 +96,10 @@ class CounterRepository @Inject constructor(
     @RequiresApi(Build.VERSION_CODES.O)
     suspend fun getAllDailyFoldCounts(): List<Int> {
         val preferences = dataStore.data.first()
-
         return preferences.asMap().entries
             .filter { it.key.name.startsWith("daily_count_") }
             .mapNotNull { it.value as? Int }
     }
-
 
     suspend fun updateHingeAngle(angle: Int) {
         dataStore.edit { preferences ->
@@ -116,9 +107,8 @@ class CounterRepository @Inject constructor(
         }
     }
 
-    suspend fun getHingeAngle(): Int {
-        return dataStore.data.map { it[HINGE_ANGLE_KEY] ?: 0 }.first()
-    }
+    suspend fun getHingeAngle(): Int =
+        dataStore.data.map { it[HINGE_ANGLE_KEY] ?: 0 }.first()
 
     suspend fun setDailyLimit(limit: Int) {
         dataStore.edit { preferences ->
@@ -126,10 +116,8 @@ class CounterRepository @Inject constructor(
         }
     }
 
-    suspend fun getDailyLimit(): Int {
-        val preferences = dataStore.data.first()
-        return preferences[DataStoreKeys.DAILY_LIMIT_KEY] ?: 50
-    }
+    suspend fun getDailyLimit(): Int =
+        dataStore.data.first()[DataStoreKeys.DAILY_LIMIT_KEY] ?: 50
 
     @RequiresApi(Build.VERSION_CODES.O)
     fun getTodayDate(): String = LocalDate.now().toString()
@@ -137,7 +125,8 @@ class CounterRepository @Inject constructor(
     @RequiresApi(Build.VERSION_CODES.O)
     suspend fun sendDailyLimitNotification(dailyLimit: Int) {
         withContext(Dispatchers.IO) {
-            val todayDate = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
+            val todayDate =
+                SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
             val preferencesManager = FoldPreferencesManager(context)
 
             preferencesManager.getLastNotifiedDate().collect { lastNotifiedDate ->

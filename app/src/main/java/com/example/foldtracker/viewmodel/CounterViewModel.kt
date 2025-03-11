@@ -1,28 +1,18 @@
 package com.example.foldtracker.viewmodel
 
-import android.app.NotificationChannel
-import android.app.NotificationManager
 import android.content.Context
 import android.os.Build
 import android.util.Log
 import androidx.annotation.RequiresApi
-import androidx.core.app.NotificationCompat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.foldtracker.R
-import com.example.foldtracker.datastore.FoldPreferencesManager
 import com.example.foldtracker.repository.CounterRepository
 import com.example.foldtracker.widget.FoldCountWidget
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-import java.text.SimpleDateFormat
 import java.time.LocalDate
-import java.util.Date
-import java.util.Locale
 import javax.inject.Inject
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -31,6 +21,7 @@ class CounterViewModel @Inject constructor(
     private val repository: CounterRepository
 ) : ViewModel() {
 
+    // StateFlows
     private val _counter = MutableStateFlow(0)
     val counter: StateFlow<Int> = _counter
 
@@ -65,43 +56,52 @@ class CounterViewModel @Inject constructor(
     private fun refreshData() {
         viewModelScope.launch {
             repository.initializeDefaultValues()
-            loadStoredData()
-            calculateAverageFolds()
-            calculateYearlyProjection()
-            observeHingeAngle()
-            updateAchievementsAndProgress(_counter.value)
+            loadData()
+            calculateStats()
+            updateAchievements()
         }
     }
 
     private fun observeDataStoreChanges() {
         viewModelScope.launch {
-            repository.dataStore.data.collect {
-                refreshData()
-            }
+            repository.dataStore.data.collect { refreshData() }
         }
     }
 
-    private suspend fun loadStoredData() {
+    private suspend fun loadData() {
         _counter.value = repository.getCounter()
+        _dailyFolds.value = getDailyFolds()
+        _dailyLimit.value = repository.getDailyLimit()
+        _hingeAngle.value = repository.getHingeAngle()
+    }
 
+    private suspend fun getDailyFolds(): Int {
         val lastSavedDate = repository.getLastUpdatedDate()
         Log.d("CounterViewModel", "Last updated date: '$lastSavedDate', Today: '$today'")
-
-        _dailyFolds.value = if (lastSavedDate == today) {
-            repository.getDailyCount(today)
-        } else {
+        return if (lastSavedDate == today) repository.getDailyCount(today) else {
             repository.updateDailyCount(today, 0)
             repository.updateLastUpdatedDate(today)
             0
         }
-
-        _dailyLimit.value = repository.getDailyLimit()
     }
 
-    private suspend fun observeHingeAngle() {
-        repository.dataStore.data.collect {
-            _hingeAngle.value = repository.getHingeAngle()
-        }
+    private suspend fun calculateStats() {
+        _averageFolds.value = repository.getDailyFoldCounts(7).averageOrNull() ?: 0.0
+        _yearlyProjection.value = calculateYearlyProjectionValue()
+    }
+
+    private suspend fun calculateYearlyProjectionValue(): Int {
+        val allDailyCounts = repository.getAllDailyFoldCounts()
+        val averageFoldsPerDay = if (allDailyCounts.isNotEmpty()) allDailyCounts.average() else 0.0
+        return (averageFoldsPerDay * 365).toInt()
+    }
+
+    private fun updateAchievements() {
+        val milestones = listOf(10, 50, 100, 500)
+        _achievements.value =
+            milestones.filter { _counter.value >= it }.map { "Unlocked $it folds!" }
+        val nextMilestone = milestones.firstOrNull { it > _counter.value } ?: milestones.last()
+        _progressToNextAchievement.value = _counter.value.toFloat() / nextMilestone
     }
 
     fun resetCounter(context: Context) {
@@ -109,43 +109,21 @@ class CounterViewModel @Inject constructor(
             _counter.value = 0
             _dailyFolds.value = 0
             _averageFolds.value = 0.0
-
             repository.updateCounter(0)
             repository.updateDailyCount(today, 0)
             repository.clearDailyFoldCounts()
-            updateAchievementsAndProgress(0)
-            calculateYearlyProjection()
+            updateAchievements()
+            calculateStats()
             FoldCountWidget.updateWidget(context)
         }
-    }
-
-    private fun updateAchievementsAndProgress(count: Int) {
-        val milestones = listOf(10, 50, 100, 500)
-        _achievements.value = milestones.filter { count >= it }.map { "Unlocked $it folds!" }
-
-        val nextMilestone = milestones.firstOrNull { it > count } ?: milestones.last()
-        _progressToNextAchievement.value = count.toFloat() / nextMilestone
     }
 
     fun initializeData(context: Context) {
         viewModelScope.launch {
-            loadStoredData()
-            calculateAverageFolds()
-            updateAchievementsAndProgress(_counter.value)
+            loadData()
+            calculateStats()
+            updateAchievements()
             FoldCountWidget.updateWidget(context)
-        }
-    }
-
-    private suspend fun calculateAverageFolds() {
-        val dailyCounts = repository.getDailyFoldCounts(7)
-        _averageFolds.value = dailyCounts.averageOrNull() ?: 0.0
-    }
-
-    private fun calculateYearlyProjection() {
-        viewModelScope.launch {
-            val allDailyCounts = repository.getAllDailyFoldCounts()
-            val averageFoldsPerDay = if (allDailyCounts.isNotEmpty()) allDailyCounts.average() else 0.0
-            _yearlyProjection.value = (averageFoldsPerDay * 365).toInt()
         }
     }
 

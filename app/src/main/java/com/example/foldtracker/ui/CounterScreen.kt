@@ -214,6 +214,7 @@ fun ProgressBar(progress: Float) {
     Box(
         modifier = Modifier
             .fillMaxWidth(0.8f)
+            .padding(top = 12.dp)
             .height(12.dp)
             .clip(RoundedCornerShape(50))
             .background(Color.Gray.copy(alpha = 0.3f))

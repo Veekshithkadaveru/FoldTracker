@@ -59,14 +59,25 @@ class CounterViewModel @Inject constructor(
     private val today: String = LocalDate.now().toString()
 
     init {
+        refreshData()
+        observeDataStoreChanges()
+    }
+
+    private fun refreshData() {
         viewModelScope.launch {
-            repository.initializeDefaultValues()
             loadStoredData()
-            observeHingeAngle()
             calculateAverageFolds()
             calculateYearlyProjection()
-
+            observeHingeAngle()
             updateAchievementsAndProgress(_counter.value)
+        }
+    }
+
+    private fun observeDataStoreChanges() {
+        viewModelScope.launch {
+            repository.dataStore.data.collect {
+                refreshData()
+            }
         }
     }
 
@@ -154,13 +165,11 @@ class CounterViewModel @Inject constructor(
         _averageFolds.value = dailyCounts.averageOrNull() ?: 0.0
     }
 
-    fun calculateYearlyProjection() {
+    private fun calculateYearlyProjection() {
         viewModelScope.launch {
             val allDailyCounts = repository.getAllDailyFoldCounts()
-            val averageFoldsPerDay = allDailyCounts.averageOrNull() ?: 0.0
-            val projectedYearlyFolds = (averageFoldsPerDay * 365).toInt()
-
-            _yearlyProjection.value = projectedYearlyFolds
+            val averageFoldsPerDay = if (allDailyCounts.isNotEmpty()) allDailyCounts.average() else 0.0
+            _yearlyProjection.value = (averageFoldsPerDay * 365).toInt()
         }
     }
 

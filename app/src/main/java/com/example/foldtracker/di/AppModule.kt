@@ -29,8 +29,9 @@ object AppModule {
     @Provides
     @Singleton
     fun provideCounterRepository(
-        dataStore: DataStore<Preferences>
+        dataStore: DataStore<Preferences>,
+        @ApplicationContext context: Context
     ): CounterRepository {
-        return CounterRepository(dataStore)
+        return CounterRepository(dataStore, context)
     }
 }

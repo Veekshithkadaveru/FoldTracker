@@ -69,11 +69,9 @@ class FoldTrackerService : Service(), SensorEventListener {
             val angle = event.values[0].toInt()
             Log.d("FoldTrackerService", "Hinge angle: $angle")
 
-
             serviceScope.launch {
                 repository.updateHingeAngle(angle)
             }
-
 
             if (angle in 90..180) {
                 if (wasDeviceClosed) {
@@ -92,21 +90,39 @@ class FoldTrackerService : Service(), SensorEventListener {
 
     @RequiresApi(Build.VERSION_CODES.O)
     private suspend fun updateCounts() {
-        val today = LocalDate.now().toString()
-        val lastSavedDate = repository.getLastUpdatedDate()
+        try {
+            val today = LocalDate.now().toString()
+            val lastSavedDate = repository.getLastUpdatedDate()
 
-        if (lastSavedDate != today) {
-            repository.updateDailyCount(today, 0)
-            repository.updateLastUpdatedDate(today)
+            if (lastSavedDate != today) {
+                repository.updateDailyCount(today, 0)
+                repository.updateLastUpdatedDate(today)
+                Log.d("FoldTrackerService", "New day detected. Daily count reset.")
+            }
+
+            val currentDaily = repository.getDailyCount(today)
+            val newDaily = currentDaily + 1
+            repository.updateDailyCount(today, newDaily)
+
+            val currentTotal = repository.getCounter()
+            val newTotal = currentTotal + 1
+            repository.updateCounter(newTotal)
+
+            Log.d("FoldTrackerService", "Fold count updated: Total=$newTotal, Daily=$newDaily")
+
+            if (newDaily >= repository.getDailyLimit()) {
+                CoroutineScope(Dispatchers.IO).launch {
+                    repository.sendDailyLimitNotification(repository.getDailyLimit())
+                    Log.d("FoldTrackerService", "Daily limit reached. Notification sent.")
+                }
+            }
+
+            Log.d("FoldTrackerService", "Counts updated successfully.")
+
+        } catch (e: Exception) {
+            Log.e("FoldTrackerService", "Error updating counts: ${e.message}")
+            e.printStackTrace()
         }
-
-        val currentDaily = repository.getDailyCount(today)
-        repository.updateDailyCount(today, currentDaily + 1)
-
-        val currentTotal = repository.getCounter()
-        repository.updateCounter(currentTotal + 1)
-
-        Log.d("FoldTrackerService", "Counts updated via sensor.")
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
@@ -114,12 +130,10 @@ class FoldTrackerService : Service(), SensorEventListener {
         while (currentCoroutineContext().isActive) {
             delay(5000)
 
-
             val simulatedAngle = (0..180).random()
 
-
             if (simulatedAngle in 90..180) {
-                updateCounts()
+                serviceScope.launch { updateCounts() }
             }
         }
     }

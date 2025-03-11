@@ -55,7 +55,6 @@ class CounterViewModel @Inject constructor(
     private val _yearlyProjection = MutableStateFlow(0)
     val yearlyProjection: StateFlow<Int> = _yearlyProjection
 
-
     private val today: String = LocalDate.now().toString()
 
     init {
@@ -105,29 +104,6 @@ class CounterViewModel @Inject constructor(
         }
     }
 
-    fun incrementCounter(context: Context) {
-        viewModelScope.launch {
-            val newCounter = _counter.value + 1
-            val newDailyCount = _dailyFolds.value + 1
-
-            _counter.value = newCounter
-            _dailyFolds.value = newDailyCount
-
-            repository.updateCounter(newCounter)
-            repository.updateDailyCount(today, newDailyCount)
-
-            if (newDailyCount >= _dailyLimit.value) {
-                sendDailyLimitNotification(context, _dailyLimit.value)
-            }
-
-
-            calculateAverageFolds()
-            calculateYearlyProjection()
-            updateAchievementsAndProgress(newCounter)
-            FoldCountWidget.updateWidget(context)
-        }
-    }
-
     fun resetCounter(context: Context) {
         viewModelScope.launch {
             _counter.value = 0
@@ -136,7 +112,6 @@ class CounterViewModel @Inject constructor(
 
             repository.updateCounter(0)
             repository.updateDailyCount(today, 0)
-            repository.clearDailyFoldCounts()
             repository.clearDailyFoldCounts()
             updateAchievementsAndProgress(0)
             calculateYearlyProjection()
@@ -180,51 +155,6 @@ class CounterViewModel @Inject constructor(
             _dailyLimit.value = newLimit
         }
     }
-
-    private fun sendDailyLimitNotification(context: Context, dailyLimit: Int) {
-        val todayDate = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
-
-        val preferencesManager = FoldPreferencesManager(context)
-
-        CoroutineScope(Dispatchers.IO).launch {
-            preferencesManager.getLastNotifiedDate().collect { lastNotifiedDate ->
-                if (lastNotifiedDate == todayDate) {
-                    Log.d("Notification", "Daily limit notification already sent today")
-                    return@collect
-                }
-
-                val notificationManager =
-                    context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    val channel = NotificationChannel(
-                        "daily_limit_channel",
-                        "Daily Fold Limit",
-                        NotificationManager.IMPORTANCE_HIGH
-                    ).apply {
-                        description = "Notifies when daily fold limit is reached"
-                    }
-                    notificationManager.createNotificationChannel(channel)
-                }
-
-                val notification = NotificationCompat.Builder(context, "daily_limit_channel")
-                    .setSmallIcon(R.drawable.ic_foldable)
-                    .setContentTitle("Daily Limit Reached!")
-                    .setContentText("You've reached your daily fold limit of $dailyLimit folds.")
-                    .setPriority(NotificationCompat.PRIORITY_HIGH)
-                    .setAutoCancel(true)
-                    .build()
-
-                val notificationId = System.currentTimeMillis().toInt()
-                notificationManager.notify(notificationId, notification)
-
-                preferencesManager.saveLastNotifiedDate(todayDate)
-
-                Log.d("Notification", "Daily limit notification sent with ID: $notificationId")
-            }
-        }
-    }
-
 
     private fun List<Int>.averageOrNull(): Double? =
         if (isNotEmpty()) average() else null

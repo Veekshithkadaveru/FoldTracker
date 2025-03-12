@@ -30,6 +30,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.example.foldtracker.viewmodel.CounterViewModel
+import kotlin.math.roundToInt
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
@@ -84,9 +85,9 @@ fun DailyLimitCard(
                 Spacer(modifier = Modifier.height(8.dp))
                 Slider(
                     value = sliderValue,
-                    onValueChange = { sliderValue = it },
+                    onValueChange = { sliderValue = (it/10).roundToInt()*10f },
                     valueRange = 10f..500f,
-                    steps = 48
+                    steps = 49
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 Button(onClick = {

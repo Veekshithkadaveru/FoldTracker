@@ -2,8 +2,6 @@ package com.example.foldtracker.ui
 
 import android.content.Context
 import android.content.Intent
-import android.os.Build
-import androidx.annotation.RequiresApi
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.SizeTransform
 import androidx.compose.animation.animateContentSize
@@ -67,7 +65,6 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.foldtracker.viewmodel.CounterViewModel
 
-@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun CounterScreen(viewModel: CounterViewModel, navController: NavController) {
     val context = LocalContext.current
@@ -110,7 +107,7 @@ fun gradientBackground(): Brush = Brush.verticalGradient(
     )
 )
 
-@RequiresApi(Build.VERSION_CODES.O)
+
 @Composable
 fun CounterStats(
     counter: Int,

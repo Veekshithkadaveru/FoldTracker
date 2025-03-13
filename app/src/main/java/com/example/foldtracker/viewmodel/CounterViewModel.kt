@@ -1,9 +1,7 @@
 package com.example.foldtracker.viewmodel
 
 import android.content.Context
-import android.os.Build
 import android.util.Log
-import androidx.annotation.RequiresApi
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.foldtracker.repository.CounterRepository
@@ -15,7 +13,6 @@ import kotlinx.coroutines.launch
 import java.time.LocalDate
 import javax.inject.Inject
 
-@RequiresApi(Build.VERSION_CODES.O)
 @HiltViewModel
 class CounterViewModel @Inject constructor(
     private val repository: CounterRepository

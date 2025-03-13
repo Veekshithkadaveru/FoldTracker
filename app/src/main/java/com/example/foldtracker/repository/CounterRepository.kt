@@ -3,9 +3,8 @@ package com.example.foldtracker.repository
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
-import android.os.Build
+
 import android.util.Log
-import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
@@ -49,13 +48,11 @@ class CounterRepository @Inject constructor(
         }
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
     suspend fun getLastUpdatedDate(): String =
         dataStore.data.map {
             it[DataStoreKeys.LAST_UPDATED_DATE_KEY] ?: getTodayDate()
         }.first()
 
-    @RequiresApi(Build.VERSION_CODES.O)
     suspend fun initializeDefaultValues() {
         dataStore.edit { preferences ->
             val isFirstLaunch = preferences[DataStoreKeys.FIRST_LAUNCH_KEY] ?: true
@@ -73,7 +70,6 @@ class CounterRepository @Inject constructor(
         }
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
     suspend fun getDailyFoldCounts(days: Int): List<Int> {
         val today = LocalDate.now()
         return (0 until days).map { i ->
@@ -82,7 +78,6 @@ class CounterRepository @Inject constructor(
         }
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
     suspend fun clearDailyFoldCounts() {
         dataStore.edit { preferences ->
             val today = LocalDate.now()
@@ -93,7 +88,6 @@ class CounterRepository @Inject constructor(
         }
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
     suspend fun getAllDailyFoldCounts(): List<Int> {
         val preferences = dataStore.data.first()
         return preferences.asMap().entries
@@ -119,10 +113,8 @@ class CounterRepository @Inject constructor(
     suspend fun getDailyLimit(): Int =
         dataStore.data.first()[DataStoreKeys.DAILY_LIMIT_KEY] ?: 50
 
-    @RequiresApi(Build.VERSION_CODES.O)
     fun getTodayDate(): String = LocalDate.now().toString()
 
-    @RequiresApi(Build.VERSION_CODES.O)
     suspend fun sendDailyLimitNotification(dailyLimit: Int) {
         withContext(Dispatchers.IO) {
             val todayDate =
@@ -138,16 +130,14 @@ class CounterRepository @Inject constructor(
                 val notificationManager =
                     context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    val channel = NotificationChannel(
-                        "daily_limit_channel",
-                        "Daily Fold Limit",
-                        NotificationManager.IMPORTANCE_HIGH
-                    ).apply {
-                        description = "Notifies when daily fold limit is reached"
-                    }
-                    notificationManager.createNotificationChannel(channel)
+                val channel = NotificationChannel(
+                    "daily_limit_channel",
+                    "Daily Fold Limit",
+                    NotificationManager.IMPORTANCE_HIGH
+                ).apply {
+                    description = "Notifies when daily fold limit is reached"
                 }
+                notificationManager.createNotificationChannel(channel)
 
                 val notification = NotificationCompat.Builder(context, "daily_limit_channel")
                     .setSmallIcon(R.drawable.ic_foldable)

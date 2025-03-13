@@ -1,8 +1,6 @@
 package com.example.foldtracker.ui
 
-import android.os.Build
 import android.widget.Toast
-import androidx.annotation.RequiresApi
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -32,7 +30,6 @@ import androidx.compose.ui.unit.dp
 import com.example.foldtracker.viewmodel.CounterViewModel
 import kotlin.math.roundToInt
 
-@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun DailyLimitCard(
     viewModel: CounterViewModel,

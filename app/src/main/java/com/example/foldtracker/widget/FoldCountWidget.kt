@@ -8,6 +8,7 @@ import androidx.glance.GlanceId
 import androidx.glance.GlanceModifier
 import androidx.glance.Image
 import androidx.glance.ImageProvider
+import androidx.glance.action.actionStartActivity
 import androidx.glance.action.clickable
 import androidx.glance.appwidget.GlanceAppWidget
 import androidx.glance.appwidget.GlanceAppWidgetManager
@@ -28,6 +29,7 @@ import androidx.glance.text.FontWeight
 import androidx.glance.text.Text
 import androidx.glance.text.TextStyle
 import androidx.glance.unit.ColorProvider
+import com.example.foldtracker.MainActivity
 import com.example.foldtracker.R
 import com.example.foldtracker.datastore.DataStoreKeys
 import com.example.foldtracker.di.dataStore
@@ -49,6 +51,7 @@ class FoldCountWidget : GlanceAppWidget() {
                 modifier = GlanceModifier
                     .wrapContentSize()
                     .background(ColorProvider(R.color.light_gray))
+                    .clickable(actionStartActivity<MainActivity>())
                     .padding(16.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalAlignment = Alignment.CenterHorizontally

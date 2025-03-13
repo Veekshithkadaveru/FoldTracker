@@ -1,7 +1,5 @@
 package com.example.foldtracker.ui
 
-import android.os.Build
-import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
@@ -27,7 +25,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.foldtracker.viewmodel.CounterViewModel
 
-@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun StatsScreen(viewModel: CounterViewModel) {
     val averageFolds by viewModel.averageFolds.collectAsState()

@@ -2,8 +2,6 @@ package com.example.foldtracker.widget
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.os.Build
-import androidx.annotation.RequiresApi
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.glance.GlanceId
@@ -36,7 +34,6 @@ import com.example.foldtracker.di.dataStore
 import kotlinx.coroutines.flow.first
 import java.time.LocalDate
 
-@RequiresApi(Build.VERSION_CODES.O)
 class FoldCountWidget : GlanceAppWidget() {
 
     @SuppressLint("RestrictedApi")

@@ -10,10 +10,8 @@ import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
-import android.os.Build
 import android.os.IBinder
 import android.util.Log
-import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import com.example.foldtracker.repository.CounterRepository
 import com.example.foldtracker.viewmodel.CounterViewModel
@@ -41,8 +39,7 @@ class FoldTrackerService : Service(), SensorEventListener {
 
     private val serviceScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
     private var wasDeviceClosed = true
-
-    @RequiresApi(Build.VERSION_CODES.O)
+    
     override fun onCreate() {
         super.onCreate()
         Log.d("FoldTrackerService", "Service started")
@@ -63,7 +60,6 @@ class FoldTrackerService : Service(), SensorEventListener {
         }
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
     override fun onSensorChanged(event: SensorEvent?) {
         if (event?.sensor?.type == Sensor.TYPE_HINGE_ANGLE) {
             val angle = event.values[0].toInt()
@@ -87,8 +83,7 @@ class FoldTrackerService : Service(), SensorEventListener {
     override fun onAccuracyChanged(p0: Sensor?, p1: Int) {
         // Not used
     }
-
-    @RequiresApi(Build.VERSION_CODES.O)
+    
     private suspend fun updateCounts() {
         try {
             val today = LocalDate.now().toString()
@@ -125,7 +120,7 @@ class FoldTrackerService : Service(), SensorEventListener {
         }
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
+    
     private suspend fun trackFoldEventsSimulated() {
         while (currentCoroutineContext().isActive) {
             delay(5000)
@@ -138,7 +133,7 @@ class FoldTrackerService : Service(), SensorEventListener {
         }
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
+    
     private fun createNotification(): Notification {
         val channelId = "fold_tracker_service_channel"
         val channelName = "Fold Tracker Service"

@@ -1,5 +1,9 @@
 package com.example.foldtracker.repository
 
+import kotlinx.coroutines.flow.Flow
+import java.time.LocalDate
+import androidx.datastore.preferences.core.Preferences
+
 interface CounterRepository {
     suspend fun getCounter(): Int
     suspend fun updateCounter(newValue: Int)
@@ -17,4 +21,5 @@ interface CounterRepository {
     suspend fun getDailyLimit(): Int
     fun getTodayDate(): String
     suspend fun sendDailyLimitNotification(dailyLimit: Int)
+    fun observePreferences(): Flow<Preferences>
 }

@@ -14,6 +14,7 @@ import com.example.foldtracker.datastore.DataStoreKeys.COUNTER_KEY
 import com.example.foldtracker.datastore.DataStoreKeys.HINGE_ANGLE_KEY
 import com.example.foldtracker.datastore.FoldPreferencesManager
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
@@ -29,6 +30,8 @@ class CounterRepositoryImpl @Inject constructor(
     private val dataStore: DataStore<Preferences>,
     private val context: Context
 ) : CounterRepository {
+
+    override fun observePreferences(): Flow<Preferences> = dataStore.data
 
     override suspend fun getCounter(): Int = dataStore.data.map { it[COUNTER_KEY] ?: 0 }.first()
 

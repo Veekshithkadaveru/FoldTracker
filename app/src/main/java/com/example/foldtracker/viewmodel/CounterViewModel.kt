@@ -61,7 +61,9 @@ class CounterViewModel @Inject constructor(
 
     private fun observeDataStoreChanges() {
         viewModelScope.launch {
-            repository.dataStore.data.collect { refreshData() }
+            repository.observePreferences().collect { 
+                refreshData() 
+            }
         }
     }
 

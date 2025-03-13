@@ -5,6 +5,7 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.preferencesDataStore
 import com.example.foldtracker.repository.CounterRepository
+import com.example.foldtracker.repository.CounterRepositoryImpl
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -18,13 +19,11 @@ val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "fo
 @InstallIn(SingletonComponent::class)
 object AppModule {
 
-
     @Provides
     @Singleton
     fun provideDataStore(@ApplicationContext context: Context): DataStore<Preferences> {
         return context.dataStore
     }
-
 
     @Provides
     @Singleton
@@ -32,6 +31,6 @@ object AppModule {
         dataStore: DataStore<Preferences>,
         @ApplicationContext context: Context
     ): CounterRepository {
-        return CounterRepository(dataStore, context)
+        return CounterRepositoryImpl(dataStore, context)
     }
 }

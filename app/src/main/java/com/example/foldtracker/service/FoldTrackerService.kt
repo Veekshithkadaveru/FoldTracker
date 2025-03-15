@@ -11,23 +11,19 @@ import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import android.os.IBinder
-import android.util.Log
 import androidx.core.app.NotificationCompat
+import com.example.foldtracker.logging.util.logd
+import com.example.foldtracker.logging.util.loge
 import com.example.foldtracker.repository.CounterRepository
-import com.example.foldtracker.viewmodel.CounterViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.NonCancellable.isActive
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import java.time.LocalDate
 import javax.inject.Inject
-import kotlin.coroutines.cancellation.CancellationException
-import kotlinx.coroutines.*
 
 @AndroidEntryPoint
 class FoldTrackerService : Service(), SensorEventListener {
@@ -43,7 +39,7 @@ class FoldTrackerService : Service(), SensorEventListener {
     
     override fun onCreate() {
         super.onCreate()
-        Log.d("FoldTrackerService", "Service started")
+        logd("Service started")
 
         sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
         hingeSensor = sensorManager.getDefaultSensor(Sensor.TYPE_HINGE_ANGLE)
@@ -52,16 +48,16 @@ class FoldTrackerService : Service(), SensorEventListener {
 
         if (hingeSensor != null) {
             sensorManager.registerListener(this, hingeSensor, SensorManager.SENSOR_DELAY_NORMAL)
-            Log.d("FoldTrackerService", "Hinge sensor registered.")
+            logd("Hinge sensor registered.")
         } else {
-            Log.e("FoldTrackerService", "Hinge sensor not available; using fallback simulation.")
+            loge("Hinge sensor not available; using fallback simulation.")
         }
     }
 
     override fun onSensorChanged(event: SensorEvent?) {
         if (event?.sensor?.type == Sensor.TYPE_HINGE_ANGLE) {
             val angle = event.values[0].toInt()
-            Log.d("FoldTrackerService", "Hinge angle: $angle")
+            logd("Hinge angle: $angle")
 
             serviceScope.launch {
                 repository.updateHingeAngle(angle)
@@ -99,7 +95,7 @@ class FoldTrackerService : Service(), SensorEventListener {
                 val today = LocalDate.now().toString()
                 dailyFolds = repository.getDailyCount(today)
             } catch (e: Exception) {
-                Log.e("FoldTrackerService", "Error getting fold counts: ${e.message}")
+                loge("Error getting fold counts: ${e.message}")
             }
         }
 
@@ -123,7 +119,7 @@ class FoldTrackerService : Service(), SensorEventListener {
             if (lastSavedDate != today) {
                 repository.updateDailyCount(today, 0)
                 repository.updateLastUpdatedDate(today)
-                Log.d("FoldTrackerService", "New day detected. Daily count reset.")
+                logd("New day detected. Daily count reset.")
             }
 
             val currentDaily = repository.getDailyCount(today)
@@ -134,7 +130,7 @@ class FoldTrackerService : Service(), SensorEventListener {
             val newTotal = currentTotal + 1
             repository.updateCounter(newTotal)
 
-            Log.d("FoldTrackerService", "Fold count updated: Total=$newTotal, Daily=$newDaily")
+            logd("Fold count updated: Total=$newTotal, Daily=$newDaily")
 
             // Update the notification with new fold counts
             updateNotification()
@@ -142,14 +138,14 @@ class FoldTrackerService : Service(), SensorEventListener {
             if (newDaily >= repository.getDailyLimit()) {
                 CoroutineScope(Dispatchers.IO).launch {
                     repository.sendDailyLimitNotification(repository.getDailyLimit())
-                    Log.d("FoldTrackerService", "Daily limit reached. Notification sent.")
+                    logd("Daily limit reached. Notification sent.")
                 }
             }
 
-            Log.d("FoldTrackerService", "Counts updated successfully.")
+            logd("Counts updated successfully.")
 
         } catch (e: Exception) {
-            Log.e("FoldTrackerService", "Error updating counts: ${e.message}")
+            loge("Error updating counts: ${e.message}")
             e.printStackTrace()
         }
     }
@@ -158,7 +154,7 @@ class FoldTrackerService : Service(), SensorEventListener {
         super.onDestroy()
         sensorManager.unregisterListener(this)
         serviceScope.cancel()
-        Log.d("FoldTrackerService", "Service stopped")
+        logd("Service stopped")
     }
 
     override fun onBind(intent: Intent?): IBinder? = null

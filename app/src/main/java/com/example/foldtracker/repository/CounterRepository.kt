@@ -22,4 +22,6 @@ interface CounterRepository {
     fun getTodayDate(): String
     suspend fun sendDailyLimitNotification(dailyLimit: Int)
     fun observePreferences(): Flow<Preferences>
+    suspend fun isNotificationPermissionRequested(): Boolean
+    suspend fun setNotificationPermissionRequested(requested: Boolean)
 }

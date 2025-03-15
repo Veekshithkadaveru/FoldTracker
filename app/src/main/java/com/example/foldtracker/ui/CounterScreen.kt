@@ -1,7 +1,15 @@
 package com.example.foldtracker.ui
 
+import android.Manifest
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.net.Uri
+import android.os.Build
+import android.provider.Settings
+import android.util.Log
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.SizeTransform
 import androidx.compose.animation.animateContentSize
@@ -34,7 +42,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -42,11 +49,11 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -62,8 +69,23 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
 import androidx.navigation.NavController
 import com.example.foldtracker.viewmodel.CounterViewModel
+
+// Function to check if notification permission is granted
+fun isNotificationPermissionGranted(context: Context): Boolean {
+    // For Android 13 (API 33) and above, check for POST_NOTIFICATIONS permission
+    return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        ContextCompat.checkSelfPermission(
+            context,
+            Manifest.permission.POST_NOTIFICATIONS
+        ) == PackageManager.PERMISSION_GRANTED
+    } else {
+        // For older versions, permission is granted at install time
+        true
+    }
+}
 
 @Composable
 fun CounterScreen(viewModel: CounterViewModel, navController: NavController) {
@@ -71,8 +93,32 @@ fun CounterScreen(viewModel: CounterViewModel, navController: NavController) {
     val counter by viewModel.counter.collectAsState()
     val dailyFolds by viewModel.dailyFolds.collectAsState()
     val achievements by viewModel.achievements.collectAsState()
-    var showDialog by remember { mutableStateOf(false) }
+    var showResetConfirmationDialog by remember { mutableStateOf(false) }
 
+    // Check if notification permission is needed and not granted
+    val permissionNeeded = Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+            !isNotificationPermissionGranted(context)
+
+    // Permission request launcher
+    val requestPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        Log.d("Notification granted? ", "$isGranted")
+        // Mark that we've requested permission
+        viewModel.setNotificationPermissionRequested(true)
+        // No additional action needed if permission is denied since notifications are optional
+    }
+
+    // Check permission on first composition
+    LaunchedEffect(key1 = true) {
+        if (permissionNeeded) {
+            // Check if we've already requested permission before
+            val alreadyRequested = viewModel.isNotificationPermissionRequested()
+            if (!alreadyRequested) {
+                requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+            }
+        }
+    }
 
     val nextMilestone = if (counter == 0) 50 else ((counter / 50) + 1) * 50
     val progress = if (counter == 0) 0f else counter / nextMilestone.toFloat()
@@ -91,13 +137,20 @@ fun CounterScreen(viewModel: CounterViewModel, navController: NavController) {
             CounterStats(counter, dailyFolds, navController)
             ProgressBar(progress)
             AchievementSection(achievements)
-            ActionButtons { showDialog = true }
+            ActionButtons { showResetConfirmationDialog = true }
         }
     }
-    if (showDialog) ResetConfirmationDialog(onConfirm = {
-        viewModel.resetCounter(context)
-        showDialog = false
-    }, onDismiss = { showDialog = false })
+
+    // Reset confirmation dialog
+    if (showResetConfirmationDialog) {
+        ResetConfirmationDialog(
+            onConfirm = {
+                viewModel.resetCounter(context)
+                showResetConfirmationDialog = false
+            },
+            onDismiss = { showResetConfirmationDialog = false }
+        )
+    }
 }
 
 @Composable
@@ -107,7 +160,6 @@ fun gradientBackground(): Brush = Brush.verticalGradient(
     )
 )
 
-
 @Composable
 fun CounterStats(
     counter: Int,
@@ -116,8 +168,6 @@ fun CounterStats(
 ) {
 
     var isDailyLimitCardExpanded by remember { mutableStateOf(false) }
-
-
 
     Column(
         modifier = Modifier
@@ -157,8 +207,9 @@ fun CounterCard(label: String, count: Any) {
         targetState = count,
         transitionSpec = {
             (slideInVertically { height -> -height } + fadeIn() + scaleIn(initialScale = 0.8f))
-                .togetherWith(slideOutVertically
-                { height -> height } + fadeOut() + scaleOut(targetScale = 1.2f))
+                .togetherWith(
+                    slideOutVertically
+                    { height -> height } + fadeOut() + scaleOut(targetScale = 1.2f))
                 .using(SizeTransform(clip = false))
         }
     ) { targetCount ->

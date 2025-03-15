@@ -23,6 +23,7 @@ object DataStoreKeys {
     val HINGE_ANGLE_KEY = intPreferencesKey("hinge_angle_key")
     val DAILY_LIMIT_KEY = intPreferencesKey("daily_limit_key")
     val LAST_NOTIFIED_DATE_KEY = stringPreferencesKey("last_notified_date_key")
+    val NOTIFICATION_PERMISSION_REQUESTED_KEY = booleanPreferencesKey("notification_permission_requested_key")
 }
 
 // Preferences Manager

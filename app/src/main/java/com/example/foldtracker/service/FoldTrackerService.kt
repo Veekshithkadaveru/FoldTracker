@@ -23,6 +23,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import java.time.LocalDate
 import javax.inject.Inject
 import kotlin.coroutines.cancellation.CancellationException
@@ -81,6 +82,39 @@ class FoldTrackerService : Service(), SensorEventListener {
         // Not used
     }
     
+    private fun createNotification(): Notification {
+        val channelId = "fold_tracker_service_channel"
+        val channelName = "Fold Tracker Service"
+        val manager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        val channel = NotificationChannel(channelId, channelName, NotificationManager.IMPORTANCE_LOW)
+        manager.createNotificationChannel(channel)
+
+        // Launch a coroutine to get the fold counts
+        var totalFolds = 0
+        var dailyFolds = 0
+        
+        runBlocking {
+            try {
+                totalFolds = repository.getCounter()
+                val today = LocalDate.now().toString()
+                dailyFolds = repository.getDailyCount(today)
+            } catch (e: Exception) {
+                Log.e("FoldTrackerService", "Error getting fold counts: ${e.message}")
+            }
+        }
+
+        return NotificationCompat.Builder(this, channelId)
+            .setContentTitle("Fold Tracker Running")
+            .setContentText("Total: $totalFolds folds | Today: $dailyFolds folds")
+            .setSmallIcon(android.R.drawable.ic_menu_info_details)
+            .build()
+    }
+
+    private fun updateNotification() {
+        val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        notificationManager.notify(1, createNotification())
+    }
+
     private suspend fun updateCounts() {
         try {
             val today = LocalDate.now().toString()
@@ -102,6 +136,9 @@ class FoldTrackerService : Service(), SensorEventListener {
 
             Log.d("FoldTrackerService", "Fold count updated: Total=$newTotal, Daily=$newDaily")
 
+            // Update the notification with new fold counts
+            updateNotification()
+
             if (newDaily >= repository.getDailyLimit()) {
                 CoroutineScope(Dispatchers.IO).launch {
                     repository.sendDailyLimitNotification(repository.getDailyLimit())
@@ -115,20 +152,6 @@ class FoldTrackerService : Service(), SensorEventListener {
             Log.e("FoldTrackerService", "Error updating counts: ${e.message}")
             e.printStackTrace()
         }
-    }
-    
-    private fun createNotification(): Notification {
-        val channelId = "fold_tracker_service_channel"
-        val channelName = "Fold Tracker Service"
-        val manager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        val channel = NotificationChannel(channelId, channelName, NotificationManager.IMPORTANCE_LOW)
-        manager.createNotificationChannel(channel)
-
-        return NotificationCompat.Builder(this, channelId)
-            .setContentTitle("Fold Tracker Running")
-            .setContentText("Monitoring your device folds")
-            .setSmallIcon(android.R.drawable.ic_menu_info_details)
-            .build()
     }
 
     override fun onDestroy() {

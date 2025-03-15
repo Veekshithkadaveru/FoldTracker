@@ -158,4 +158,13 @@ class CounterRepositoryImpl @Inject constructor(
             }
         }
     }
+
+    override suspend fun isNotificationPermissionRequested(): Boolean =
+        dataStore.data.map { it[DataStoreKeys.NOTIFICATION_PERMISSION_REQUESTED_KEY] ?: false }.first()
+
+    override suspend fun setNotificationPermissionRequested(requested: Boolean) {
+        dataStore.edit { preferences ->
+            preferences[DataStoreKeys.NOTIFICATION_PERMISSION_REQUESTED_KEY] = requested
+        }
+    }
 } 

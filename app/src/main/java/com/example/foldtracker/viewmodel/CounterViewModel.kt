@@ -7,6 +7,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.foldtracker.repository.CounterRepository
 import com.example.foldtracker.widget.FoldCountWidget
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -130,6 +131,16 @@ class CounterViewModel @Inject constructor(
         viewModelScope.launch {
             repository.setDailyLimit(newLimit)
             _dailyLimit.value = newLimit
+        }
+    }
+
+    suspend fun isNotificationPermissionRequested(): Boolean {
+        return repository.isNotificationPermissionRequested()
+    }
+
+    fun setNotificationPermissionRequested(requested: Boolean) {
+        viewModelScope.launch(Dispatchers.IO) {
+            repository.setNotificationPermissionRequested(requested)
         }
     }
 

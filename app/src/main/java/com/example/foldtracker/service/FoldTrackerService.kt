@@ -53,10 +53,7 @@ class FoldTrackerService : Service(), SensorEventListener {
             sensorManager.registerListener(this, hingeSensor, SensorManager.SENSOR_DELAY_NORMAL)
             Log.d("FoldTrackerService", "Hinge sensor registered.")
         } else {
-            Log.d("FoldTrackerService", "Hinge sensor not available; using fallback simulation.")
-            serviceScope.launch {
-                trackFoldEventsSimulated()
-            }
+            Log.e("FoldTrackerService", "Hinge sensor not available; using fallback simulation.")
         }
     }
 
@@ -119,20 +116,6 @@ class FoldTrackerService : Service(), SensorEventListener {
             e.printStackTrace()
         }
     }
-
-    
-    private suspend fun trackFoldEventsSimulated() {
-        while (currentCoroutineContext().isActive) {
-            delay(5000)
-
-            val simulatedAngle = (0..180).random()
-
-            if (simulatedAngle in 90..180) {
-                serviceScope.launch { updateCounts() }
-            }
-        }
-    }
-
     
     private fun createNotification(): Notification {
         val channelId = "fold_tracker_service_channel"

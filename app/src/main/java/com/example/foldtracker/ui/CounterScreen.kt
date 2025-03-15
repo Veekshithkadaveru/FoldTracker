@@ -91,7 +91,7 @@ fun CounterScreen(viewModel: CounterViewModel, navController: NavController) {
             CounterStats(counter, dailyFolds, navController)
             ProgressBar(progress)
             AchievementSection(achievements)
-            ActionButtons(counter, context) { showDialog = true }
+            ActionButtons { showDialog = true }
         }
     }
     if (showDialog) ResetConfirmationDialog(onConfirm = {
@@ -278,8 +278,6 @@ fun AchievementSection(achievements: List<String>) {
 
 @Composable
 fun ActionButtons(
-    counter: Int,
-    context: Context,
     onResetClick: () -> Unit
 ) {
     Row(
@@ -296,22 +294,6 @@ fun ActionButtons(
             Spacer(modifier = Modifier.padding(4.dp))
             Text("Reset Counter")
         }
-
-        Button(
-            onClick = {
-                val shareText = "I've opened my foldable device $counter times! Can you beat that?"
-                val intent = Intent(Intent.ACTION_SEND).apply {
-                    type = "text/plain"
-                    putExtra(Intent.EXTRA_TEXT, shareText)
-                }
-                context.startActivity(Intent.createChooser(intent, "Share your fold count"))
-            }
-        ) {
-            Icon(imageVector = Icons.Filled.Share, contentDescription = "Share")
-            Spacer(modifier = Modifier.padding(4.dp))
-            Text("Share")
-        }
-
     }
 }
 

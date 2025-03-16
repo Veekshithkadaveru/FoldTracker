@@ -18,7 +18,7 @@ fun AppNavigation(viewModel: CounterViewModel) {
         }
 
         composable("stats_screen") {
-            StatsScreen(viewModel = viewModel)
+            StatsScreen(viewModel = viewModel, navController = navController)
         }
     }
 }

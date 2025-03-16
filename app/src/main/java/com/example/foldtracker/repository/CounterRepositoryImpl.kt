@@ -9,10 +9,10 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import com.example.foldtracker.R
-import com.example.foldtracker.datastore.DataStoreKeys
-import com.example.foldtracker.datastore.DataStoreKeys.COUNTER_KEY
-import com.example.foldtracker.datastore.DataStoreKeys.HINGE_ANGLE_KEY
-import com.example.foldtracker.datastore.FoldPreferencesManager
+import com.example.foldtracker.repository.datastore.DataStoreKeys
+import com.example.foldtracker.repository.datastore.DataStoreKeys.COUNTER_KEY
+import com.example.foldtracker.repository.datastore.DataStoreKeys.HINGE_ANGLE_KEY
+import com.example.foldtracker.repository.datastore.FoldPreferencesManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first

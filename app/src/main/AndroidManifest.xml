@@ -7,7 +7,7 @@
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <application
-        android:name=".di.FoldTrackerApp"
+        android:name=".core.FoldTrackerApp"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
@@ -29,7 +29,7 @@
             </intent-filter>
         </activity>
         <receiver
-            android:name=".widget.FoldCountWidgetReceiver"
+            android:name=".feature.widget.FoldCountWidgetReceiver"
             android:exported="false"
             android:enabled="true"
             android:permission="android.permission.BIND_APPWIDGET">

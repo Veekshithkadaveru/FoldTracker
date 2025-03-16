@@ -8,8 +8,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.foldtracker.service.FoldTrackerService
-import com.example.foldtracker.ui.navigation.AppNavigation
-import com.example.foldtracker.viewmodel.CounterViewModel
+import com.example.foldtracker.core.navigation.AppNavigation
+import com.example.foldtracker.feature.counter.CounterViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint

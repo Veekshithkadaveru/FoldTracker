@@ -12,8 +12,8 @@ import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
-import com.example.foldtracker.logging.util.logd
-import com.example.foldtracker.logging.util.loge
+import com.example.foldtracker.core.logging.util.logd
+import com.example.foldtracker.core.logging.util.loge
 import com.example.foldtracker.repository.CounterRepository
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope

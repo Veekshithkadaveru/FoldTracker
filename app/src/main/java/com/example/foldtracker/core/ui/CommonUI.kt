@@ -42,7 +42,7 @@ fun gradientBackground(): Brush = Brush.verticalGradient(
 )
 
 @Composable
-fun CounterCard(label: String, count: Any) {
+fun CounterCard(label: String, count: Any,modifier: Modifier) {
     // Fixed size for all cards
     val cardWidth = 150.dp
     val cardHeight = 120.dp

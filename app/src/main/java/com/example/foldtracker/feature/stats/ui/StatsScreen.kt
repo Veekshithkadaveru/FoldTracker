@@ -3,13 +3,16 @@ package com.example.foldtracker.feature.stats.ui
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.MoreVert
@@ -35,6 +38,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.foldtracker.core.ui.CounterCard
 import com.example.foldtracker.core.ui.gradientBackground
@@ -53,15 +57,24 @@ fun StatsScreen(viewModel: CounterViewModel, navController: NavController) {
     var showAboutDialog by remember { mutableStateOf(false) }
     var showHelpDialog by remember { mutableStateOf(false) }
 
+    val scrollState = rememberScrollState()
+
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Statistics") },
+                title = {
+                    Text(
+                        "Statistics",
+                        color = MaterialTheme.colorScheme.primary,
+                        fontSize = 24.sp
+                    )
+                },
                 navigationIcon = {
                     IconButton(onClick = { navController.navigateUp() }) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back"
+                            contentDescription = "Back",
+                            tint =MaterialTheme.colorScheme.primary
                         )
                     }
                 },
@@ -69,7 +82,8 @@ fun StatsScreen(viewModel: CounterViewModel, navController: NavController) {
                     IconButton(onClick = { showOverflowMenu = true }) {
                         Icon(
                             imageVector = Icons.Default.MoreVert,
-                            contentDescription = "More options"
+                            contentDescription = "More options",
+                            tint =MaterialTheme.colorScheme.primary
                         )
                     }
                     DropdownMenu(
@@ -95,37 +109,109 @@ fun StatsScreen(viewModel: CounterViewModel, navController: NavController) {
             )
         }
     ) { paddingValues ->
-        Column(
+        Box(
             modifier = Modifier
                 .fillMaxSize()
                 .background(gradientBackground())
                 .padding(paddingValues)
-                .padding(16.dp)
-                .pointerInput(isDailyLimitCardExpanded) {
-                    detectTapGestures { _ ->
+                .pointerInput(Unit) {
+                    detectTapGestures {
                         if (isDailyLimitCardExpanded) {
                             isDailyLimitCardExpanded = false
                         }
                     }
-                },
-            verticalArrangement = Arrangement.Top,
-            horizontalAlignment = Alignment.CenterHorizontally
+                }
         ) {
-            Spacer(modifier = Modifier.height(16.dp))
-            Row(
+            Column(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp),
-                horizontalArrangement = Arrangement.SpaceEvenly
+                    .fillMaxSize()
+                    .padding(32.dp)
+                    .verticalScroll(scrollState),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(60.dp)
             ) {
-                CounterCard("Avg. Weekly Folds", String.format("%.2f", averageFolds))
-                CounterCard("Hinge Angle", "$hingeAngle°")
+                // First row with two cards
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(48.dp)
+                ) {
+                    // Average Weekly Folds Card
+                    CounterCard(
+                        label = "Avg. Weekly Folds",
+                        count = String.format("%.1f", averageFolds),
+                        modifier = Modifier.size(165.dp, 140.dp)
+                    )
+
+                    // Hinge Angle Card
+                    CounterCard(
+                        label = "Hinge Angle",
+                        count = "$hingeAngle°",
+                        modifier = Modifier.size(165.dp, 140.dp)
+                    )
+                }
+
+                // Second row with two cards
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(48.dp)
+                ) {
+                    // Yearly Projection Card
+                    CounterCard(
+                        label = "Yearly Projection",
+                        count = String.format("%d", yearlyProjection),
+                        modifier = Modifier.size(165.dp, 140.dp)
+                    )
+
+                    // Daily Limit Card (in the same size as others)
+                    Box(
+                        modifier = Modifier
+                            .size(165.dp, 140.dp)
+                            .pointerInput(Unit) {
+                                detectTapGestures {
+                                    isDailyLimitCardExpanded = true
+                                }
+                            }
+                    ) {
+                        if (!isDailyLimitCardExpanded) {
+                            DailyLimitCard(
+                                viewModel = viewModel,
+                                isExpanded = false
+                            ) {
+                                isDailyLimitCardExpanded = true
+                            }
+                        }
+                    }
+                }
+
+                // Bottom spacing
+                Spacer(modifier = Modifier.height(24.dp))
             }
-            Spacer(modifier = Modifier.height(16.dp))
-            CounterCard("Yearly Projection", String.format("%d", yearlyProjection))
-            Spacer(modifier = Modifier.height(16.dp))
-            DailyLimitCard(viewModel = viewModel, isExpanded = isDailyLimitCardExpanded) {
-                isDailyLimitCardExpanded = !isDailyLimitCardExpanded
+
+            // If daily limit card is expanded, show it on top
+            if (isDailyLimitCardExpanded) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(MaterialTheme.colorScheme.background.copy(alpha = 0.7f))
+                        .pointerInput(Unit) {
+                            detectTapGestures {
+                                isDailyLimitCardExpanded = false
+                            }
+                        },
+                    contentAlignment = Alignment.Center
+                ) {
+                    // Stop propagation of clicks within the card
+                    Box(
+                        modifier = Modifier.pointerInput(Unit) {
+                            detectTapGestures { /* Consume click events */ }
+                        }
+                    ) {
+                        DailyLimitCard(
+                            viewModel = viewModel,
+                            isExpanded = true
+                        ) {
+                            isDailyLimitCardExpanded = it
+                        }
+                    }
+                }
             }
         }
     }

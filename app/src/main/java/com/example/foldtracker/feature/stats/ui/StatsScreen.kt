@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -39,6 +38,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.foldtracker.core.ui.CounterCard
 import com.example.foldtracker.core.ui.gradientBackground
@@ -56,18 +56,25 @@ fun StatsScreen(viewModel: CounterViewModel, navController: NavController) {
     var showOverflowMenu by remember { mutableStateOf(false) }
     var showAboutDialog by remember { mutableStateOf(false) }
     var showHelpDialog by remember { mutableStateOf(false) }
-    
+
     val scrollState = rememberScrollState()
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Statistics") },
+                title = {
+                    Text(
+                        "Statistics",
+                        color = MaterialTheme.colorScheme.primary,
+                        fontSize = 24.sp
+                    )
+                },
                 navigationIcon = {
                     IconButton(onClick = { navController.navigateUp() }) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back"
+                            contentDescription = "Back",
+                            tint =MaterialTheme.colorScheme.primary
                         )
                     }
                 },
@@ -75,7 +82,8 @@ fun StatsScreen(viewModel: CounterViewModel, navController: NavController) {
                     IconButton(onClick = { showOverflowMenu = true }) {
                         Icon(
                             imageVector = Icons.Default.MoreVert,
-                            contentDescription = "More options"
+                            contentDescription = "More options",
+                            tint =MaterialTheme.colorScheme.primary
                         )
                     }
                     DropdownMenu(
@@ -107,7 +115,7 @@ fun StatsScreen(viewModel: CounterViewModel, navController: NavController) {
                 .background(gradientBackground())
                 .padding(paddingValues)
                 .pointerInput(Unit) {
-                    detectTapGestures { 
+                    detectTapGestures {
                         if (isDailyLimitCardExpanded) {
                             isDailyLimitCardExpanded = false
                         }
@@ -132,7 +140,7 @@ fun StatsScreen(viewModel: CounterViewModel, navController: NavController) {
                         count = String.format("%.1f", averageFolds),
                         modifier = Modifier.size(165.dp, 140.dp)
                     )
-                    
+
                     // Hinge Angle Card
                     CounterCard(
                         label = "Hinge Angle",
@@ -140,7 +148,7 @@ fun StatsScreen(viewModel: CounterViewModel, navController: NavController) {
                         modifier = Modifier.size(165.dp, 140.dp)
                     )
                 }
-                
+
                 // Second row with two cards
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(48.dp)
@@ -151,7 +159,7 @@ fun StatsScreen(viewModel: CounterViewModel, navController: NavController) {
                         count = String.format("%d", yearlyProjection),
                         modifier = Modifier.size(165.dp, 140.dp)
                     )
-                    
+
                     // Daily Limit Card (in the same size as others)
                     Box(
                         modifier = Modifier
@@ -172,11 +180,11 @@ fun StatsScreen(viewModel: CounterViewModel, navController: NavController) {
                         }
                     }
                 }
-                
+
                 // Bottom spacing
                 Spacer(modifier = Modifier.height(24.dp))
             }
-            
+
             // If daily limit card is expanded, show it on top
             if (isDailyLimitCardExpanded) {
                 Box(
@@ -184,7 +192,7 @@ fun StatsScreen(viewModel: CounterViewModel, navController: NavController) {
                         .fillMaxSize()
                         .background(MaterialTheme.colorScheme.background.copy(alpha = 0.7f))
                         .pointerInput(Unit) {
-                            detectTapGestures { 
+                            detectTapGestures {
                                 isDailyLimitCardExpanded = false
                             }
                         },

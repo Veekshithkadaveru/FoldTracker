@@ -12,8 +12,8 @@
     <color name="card_white">#FFFFFF</color>
     <color name="dark_gray">#333333</color>
     <color name="medium_gray">#666666</color>
-    <color name="blue">#2575FC</color>
-    <color name="purple">#6A11CB</color>
+    <color name="blue">#2196F3</color>
+    <color name="purple">#673AB7</color>
 
 
 </resources>

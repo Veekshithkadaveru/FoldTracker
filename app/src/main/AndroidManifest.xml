@@ -29,17 +29,21 @@
             </intent-filter>
         </activity>
         <receiver
-            android:name=".feature.widget.FoldCountWidgetReceiver"
-            android:exported="false"
-            android:enabled="true"
-            android:permission="android.permission.BIND_APPWIDGET">
+            android:name=".feature.widget.FoldCountWidget"
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
             </intent-filter>
-
             <meta-data
                 android:name="android.appwidget.provider"
                 android:resource="@xml/fold_count_widget_info" />
+        </receiver>
+        <receiver
+            android:name=".feature.widget.FoldCountWidgetReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="com.example.foldtracker.WIDGET_REFRESH" />
+            </intent-filter>
         </receiver>
         <service
             android:name=".service.FoldTrackerService"

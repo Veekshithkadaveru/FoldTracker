@@ -24,6 +24,7 @@ import androidx.glance.layout.fillMaxWidth
 import androidx.glance.layout.height
 import androidx.glance.layout.padding
 import androidx.glance.layout.size
+import androidx.glance.layout.width
 import androidx.glance.layout.wrapContentSize
 import androidx.glance.text.FontWeight
 import androidx.glance.text.Text
@@ -62,14 +63,21 @@ class FoldCountWidget : GlanceAppWidget() {
                     horizontalAlignment = Alignment.CenterHorizontally,
                     modifier = GlanceModifier.fillMaxWidth()
                 ) {
+                    Image(
+                        provider = ImageProvider(R.mipmap.ic_launcher_round),
+                        contentDescription = "App Logo",
+                        modifier = GlanceModifier
+                            .size(22.dp)
+                            .padding(end = 8.dp)
+                    )
+
                     Text(
-                        text = "📊 Fold Stats",
+                        text = "Fold Tracker",
                         style = TextStyle(
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Bold,
-                            color = ColorProvider(R.color.dark_gray)
-                        ),
-                        modifier = GlanceModifier.padding(end = 8.dp)
+                            color = ColorProvider(R.color.medium_gray)
+                        )
                     )
 
                     Image(
@@ -85,15 +93,20 @@ class FoldCountWidget : GlanceAppWidget() {
 
                 Box(
                     modifier = GlanceModifier
-                        .wrapContentSize()
+                        .height(60.dp)
+                        .width(120.dp)
                         .background(ColorProvider(R.color.card_white))
-                        .padding(8.dp)
+                        .padding(8.dp),
+                    contentAlignment = Alignment.Center
                 ) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
                         Text(
                             text = "📅 Today's Folds",
                             style = TextStyle(
-                                fontSize = 16.sp,
+                                fontSize = 12.sp,
                                 fontWeight = FontWeight.Medium,
                                 color = ColorProvider(R.color.medium_gray)
                             )
@@ -102,7 +115,7 @@ class FoldCountWidget : GlanceAppWidget() {
                         Text(
                             text = "$dailyCount",
                             style = TextStyle(
-                                fontSize = 16.sp,
+                                fontSize = 18.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = ColorProvider(R.color.blue)
                             )
@@ -114,15 +127,20 @@ class FoldCountWidget : GlanceAppWidget() {
 
                 Box(
                     modifier = GlanceModifier
-                        .wrapContentSize()
+                        .height(60.dp)
+                        .width(120.dp)
                         .background(ColorProvider(R.color.card_white))
-                        .padding(8.dp)
+                        .padding(8.dp),
+                    contentAlignment = Alignment.Center
                 ) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Column(
+                        horizontalAlignment = Alignment.Horizontal.CenterHorizontally,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
                         Text(
                             text = "📈 Total Folds",
                             style = TextStyle(
-                                fontSize = 16.sp,
+                                fontSize = 12.sp,
                                 fontWeight = FontWeight.Medium,
                                 color = ColorProvider(R.color.medium_gray)
                             )
@@ -131,7 +149,7 @@ class FoldCountWidget : GlanceAppWidget() {
                         Text(
                             text = "$totalCount",
                             style = TextStyle(
-                                fontSize = 16.sp,
+                                fontSize = 18.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = ColorProvider(R.color.purple)
                             )

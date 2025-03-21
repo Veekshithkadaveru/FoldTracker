@@ -7,6 +7,7 @@ import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.floatPreferencesKey
 import androidx.datastore.preferences.core.intPreferencesKey
+import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.Flow
@@ -24,6 +25,10 @@ object DataStoreKeys {
     val DAILY_LIMIT_KEY = intPreferencesKey("daily_limit_key")
     val LAST_NOTIFIED_DATE_KEY = stringPreferencesKey("last_notified_date_key")
     val NOTIFICATION_PERMISSION_REQUESTED_KEY = booleanPreferencesKey("notification_permission_requested_key")
+    
+    // Add keys for widget refresh
+    val WIDGET_REFRESH_TIMESTAMP_KEY = longPreferencesKey("widget_refresh_timestamp")
+    val WIDGET_LAST_REFRESH_KEY = longPreferencesKey("widget_last_refresh")
 }
 
 // Preferences Manager

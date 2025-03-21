@@ -66,7 +66,8 @@ class FoldCountWidget : GlanceAppWidget() {
         provideContent {
             Column(
                 modifier = GlanceModifier
-                    .size(224.dp)
+                    .height(204.dp)
+                    .width(172.dp)
                     .background(ColorProvider(R.color.light_gray))
                     .cornerRadius(24.dp)
                     .clickable(actionStartActivity<MainActivity>())
